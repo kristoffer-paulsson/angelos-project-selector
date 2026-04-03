@@ -19,9 +19,9 @@ package org.angproj.io.sel
  * A fully functional abstract base for selection keys, using [SelectOperation] for operation sets.
  */
 public abstract class AbstractSelectionKey<A, E: SelectOperation<*>>(
-    private val _selector: AbstractSelector,
-    private val _channel: SelectableChannel,
-    private  var _attachment: A
+    protected val selector: AbstractSelector,
+    protected val item: SelectableItem,
+    protected var attachment: A
 ) : SelectionKey<A, E> {
 
     private var _interestOps: Int = 0
@@ -30,15 +30,15 @@ public abstract class AbstractSelectionKey<A, E: SelectOperation<*>>(
 
     private var _valid: Boolean = true
 
-    override fun selector(): Selector = _selector
+    override fun selector(): Selector = selector
 
-    override fun channel(): SelectableChannel = _channel
+    override fun item(): SelectableItem = item
 
     override fun attach(obj: A) {
-        _attachment = obj
+        attachment = obj
     }
 
-    override fun attachment(): A = _attachment
+    override fun attachment(): A = attachment
 
     override fun interestOps(): Int {
         ensureValid()
@@ -64,7 +64,7 @@ public abstract class AbstractSelectionKey<A, E: SelectOperation<*>>(
         _readyOps = ops
     }
 
-    override fun isHandleable(op: E): Boolean = (readyOps() and op.toInt()) != 0
+    //override fun isHandleable(op: E): Boolean = (readyOps() and op.toInt()) != 0
 
 
     /*override fun isAcceptable(): Boolean =
@@ -84,7 +84,7 @@ public abstract class AbstractSelectionKey<A, E: SelectOperation<*>>(
     override fun cancel() {
         if (_valid) {
             _valid = false
-            _selector.deregister(this)
+            selector.deregister(this)
         }
     }
 

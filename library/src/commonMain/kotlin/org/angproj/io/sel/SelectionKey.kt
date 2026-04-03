@@ -15,7 +15,7 @@
 package org.angproj.io.sel
 
 /**
- * A token representing the registration of a [SelectableChannel] with a [Selector].
+ * A token representing the registration of a [SelectableItem] with a [Selector].
  *
  * A selection key is created each time a channel is registered with a selector.
  * It remains valid until it is cancelled, the channel is closed, or the selector is closed.
@@ -53,7 +53,7 @@ public interface SelectionKey<A, E: SelectOperation<*>> {
     /**
      * Returns the channel for which this key was created.
      */
-    public fun channel(): SelectableChannel
+    public fun item(): SelectableItem
 
     /**
      * Retrieves this key's interest set.
@@ -77,6 +77,9 @@ public interface SelectionKey<A, E: SelectOperation<*>> {
      */
     public fun readyOps(): Int
 
+    /**
+     *
+     */
     public fun isHandleable(op: E): Boolean
 
     /**

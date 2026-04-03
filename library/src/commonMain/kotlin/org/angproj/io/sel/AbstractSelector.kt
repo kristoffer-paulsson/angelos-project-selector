@@ -47,5 +47,5 @@ public abstract class AbstractSelector : Selector {
 
     protected abstract fun implCloseSelector()
 
-    protected abstract fun<A> register(channel: AbstractSelectableChannel, ops: Int, att: A): SelectionKey<A, *>
+    protected abstract fun<A> register(channel: AbstractSelectableItem, ops: Int, att: A): SelectionKey<A, *>
 }

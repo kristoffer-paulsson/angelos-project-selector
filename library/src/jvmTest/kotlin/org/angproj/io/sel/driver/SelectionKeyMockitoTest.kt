@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2025 by Kristoffer Paulsson <kristoffer.paulsson@talenten.se>.
+ * Copyright (c) 2026 by Kristoffer Paulsson <kristoffer.paulsson@talenten.se>.
  *
  * This software is available under the terms of the MIT license. Parts are licensed
  * under different terms if stated. The legal terms are attached to the LICENSE file
@@ -12,7 +12,15 @@
  * Contributors:
  *      Kristoffer Paulsson - initial implementation
  */
-package org.angproj.io.sel
+package org.angproj.io.sel.driver
 
-public abstract class AbstractSelectableChannel : SelectableChannel{
+import org.angproj.io.sel.SelectChannelOperation
+import org.angproj.io.sel.SelectionKey
+import kotlin.test.Test
+
+class SelectionKeyMockitoTest {
+    @Test
+    fun testSelectionKey() {
+        //mock(SelectionKey<String, SelectChannelOperation>())
+    }
 }

@@ -14,5 +14,5 @@
  */
 package org.angproj.io.sel
 
-public interface SelectableChannel : Streamable{
+public interface SelectableItem : Streamable{
 }

@@ -14,7 +14,7 @@
  */
 package org.angproj.io.sel.driver
 
-import org.angproj.io.sel.AbstractSelectableChannel
+import org.angproj.io.sel.AbstractSelectableItem
 import org.angproj.io.sel.AbstractSelectionKey
 import org.angproj.io.sel.AbstractSelector
 import org.angproj.io.sel.SelectionKey
@@ -82,7 +82,7 @@ public object Driver : SelectorProvider {
         }
 
         override fun<A> register(
-            channel: AbstractSelectableChannel,
+            channel: AbstractSelectableItem,
             ops: Int,
             att: A
         ): SelectionKey<A, *> {
