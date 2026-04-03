@@ -23,7 +23,7 @@ public abstract class AbstractSelector : Selector {
 
     abstract override fun isOpen(): Boolean
 
-    abstract override fun keys(): Set<SelectionKey>
+    abstract override fun keys(): Set<SelectionKey<*, *>>
 
     abstract override fun provider(): SelectorProvider
 
@@ -31,7 +31,7 @@ public abstract class AbstractSelector : Selector {
 
     abstract override fun select(timeout: Duration): Int
 
-    abstract override fun selectedKeys(): Set<SelectionKey>
+    abstract override fun selectedKeys(): Set<SelectionKey<*, *>>
 
     abstract override fun selectNow(): Int
 
@@ -39,13 +39,13 @@ public abstract class AbstractSelector : Selector {
 
     //protected void	begin()
 
-    protected abstract fun cancelledKeys(): Set<SelectionKey>
+    protected abstract fun cancelledKeys(): Set<SelectionKey<*, *>>
 
-    protected abstract fun deregister(key: AbstractSelectionKey)
+    internal abstract fun deregister(key: AbstractSelectionKey<*, *>)
 
     //protected void	end()
 
     protected abstract fun implCloseSelector()
 
-    protected abstract fun register(channel: AbstractSelectableChannel, ops: Int, att: Any): SelectionKey
+    protected abstract fun<A> register(channel: AbstractSelectableChannel, ops: Int, att: A): SelectionKey<A, *>
 }

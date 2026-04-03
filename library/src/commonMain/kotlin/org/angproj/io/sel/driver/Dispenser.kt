@@ -12,7 +12,16 @@
  * Contributors:
  *      Kristoffer Paulsson - initial implementation
  */
-package org.angproj.io.sel
+package org.angproj.io.sel.driver
 
-public interface SelectorProvider {
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+
+public class Dispenser<T>(private val dispensable: T) {
+
+    private val mutex = Mutex()
+
+    public suspend fun dispense(sync: (suspend (T) -> Unit)): Unit = mutex.withLock(dispensable) {
+        sync(dispensable)
+    }
 }

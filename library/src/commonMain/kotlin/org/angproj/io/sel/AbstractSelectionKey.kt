@@ -18,12 +18,11 @@ package org.angproj.io.sel
 /**
  * A fully functional abstract base for selection keys, using [SelectOperation] for operation sets.
  */
-public abstract class AbstractSelectionKey(
-    private val _selector: Selector,
-    private val _channel: SelectableChannel
-) : SelectionKey {
-
-    private var _attachment: Any = nullAttachment
+public abstract class AbstractSelectionKey<A, E: SelectOperation<*>>(
+    private val _selector: AbstractSelector,
+    private val _channel: SelectableChannel,
+    private  var _attachment: A
+) : SelectionKey<A, E> {
 
     private var _interestOps: Int = 0
 
@@ -35,20 +34,20 @@ public abstract class AbstractSelectionKey(
 
     override fun channel(): SelectableChannel = _channel
 
-    override fun attach(obj: Any) {
+    override fun attach(obj: A) {
         _attachment = obj
     }
 
-    override fun attachment(): Any = _attachment
+    override fun attachment(): A = _attachment
 
     override fun interestOps(): Int {
         ensureValid()
         return _interestOps
     }
 
-    override fun interestOps(ops: Int): AbstractSelectionKey {
+    override fun interestOps(ops: Int): AbstractSelectionKey<A, E> {
         ensureValid()
-        require((ops and _channel.validOps().inv()) == 0) { "Invalid interest ops for channel" }
+        //require((ops and _channel.validOps().inv()) == 0) { "Invalid interest ops for channel" }
         _interestOps = ops
         return this
     }
@@ -65,7 +64,10 @@ public abstract class AbstractSelectionKey(
         _readyOps = ops
     }
 
-    override fun isAcceptable(): Boolean =
+    override fun isHandleable(op: E): Boolean = (readyOps() and op.toInt()) != 0
+
+
+    /*override fun isAcceptable(): Boolean =
         (readyOps() and SelectOperation.OP_ACCEPT.toInt()) != 0
 
     override fun isConnectable(): Boolean =
@@ -75,7 +77,7 @@ public abstract class AbstractSelectionKey(
         (readyOps() and SelectOperation.OP_READ.toInt()) != 0
 
     override fun isWritable(): Boolean =
-        (readyOps() and SelectOperation.OP_WRITE.toInt()) != 0
+        (readyOps() and SelectOperation.OP_WRITE.toInt()) != 0*/
 
     override fun isValid(): Boolean = _valid
 
@@ -91,6 +93,6 @@ public abstract class AbstractSelectionKey(
     }
 
     public companion object {
-        public val nullAttachment: Any = object
+        public val nullAttachment: Any = object {}
     }
 }

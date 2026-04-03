@@ -21,7 +21,7 @@ public interface Selector {
 
     public fun isOpen(): Boolean
 
-    public fun	keys(): Set<SelectionKey>
+    public fun keys(): Set<SelectionKey<*, *>>
 
     public fun provider(): SelectorProvider
 
@@ -29,13 +29,13 @@ public interface Selector {
 
     public fun select(timeout: Duration): Int
 
-    public fun selectedKeys(): Set<SelectionKey>
+    public fun selectedKeys(): Set<SelectionKey<*, *>>
 
     public fun selectNow(): Int
 
     public fun wakeup(): Selector
 
     public companion object {
-         //public fun	open(): Selector { return  }
+         //public fun	open(): Selector { return }
     }
 }

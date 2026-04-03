@@ -29,7 +29,7 @@ package org.angproj.io.sel
  *
  * Selection keys are thread-safe and may be used by multiple threads.
  */
-public interface SelectionKey {
+public interface SelectionKey<A, E: SelectOperation<*>> {
 
     /**
      * Returns the selector with which this key is registered.
@@ -41,14 +41,14 @@ public interface SelectionKey {
      *
      * @param obj the object to attach; may be null
      */
-    public fun attach(obj: Any)
+    public fun attach(obj: A)
 
     /**
      * Retrieves the current attachment.
      *
      * @return the attached object, or null if none
      */
-    public fun attachment(): Any
+    public fun attachment(): A
 
     /**
      * Returns the channel for which this key was created.
@@ -68,7 +68,7 @@ public interface SelectionKey {
      * @param ops the new interest set
      * @return this selection key
      */
-    public fun interestOps(ops: Int): SelectionKey
+    public fun interestOps(ops: Int): SelectionKey<A, E>
 
     /**
      * Retrieves this key's ready set.
@@ -76,6 +76,8 @@ public interface SelectionKey {
      * @return the ready set
      */
     public fun readyOps(): Int
+
+    public fun isHandleable(op: E): Boolean
 
     /**
      * Tells whether this key's channel is ready to accept a new socket connection.

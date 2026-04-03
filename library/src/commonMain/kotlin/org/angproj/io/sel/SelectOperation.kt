@@ -14,11 +14,15 @@
  */
 package org.angproj.io.sel
 
-public enum class SelectOperation(private val operation: Int) {
+public interface SelectOperation<E: Enum<E>> {
+    public val operation: Int
+
+    public fun toInt(): Int = operation
+}
+
+public enum class SelectChannelOperation(override val operation: Int): SelectOperation<SelectChannelOperation> {
     OP_ACCEPT(16),
     OP_CONNECT(8),
     OP_READ(1),
     OP_WRITE(4);
-
-    public fun toInt(): Int = operation
 }
