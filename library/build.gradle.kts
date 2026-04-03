@@ -1,6 +1,5 @@
 import com.vanniktech.maven.publish.SonatypeHost
-import org.jetbrains.kotlin.gradle.targets.js.dsl.ExperimentalWasmDsl
-import java.net.URL
+import java.util.Properties
 
 object This {
     const val longName = "Concurrent selector - Angelos Project™"
@@ -16,28 +15,27 @@ plugins {
     alias(libs.plugins.kover)
 }
 
-group = "org.angproj.io.sel"
-version = "0.1.0"
-
 kotlin {
     explicitApi()
     jvmToolchain(libs.versions.jvm.toolchain.get().toInt())
 
     jvm()
-    /*js {
+    js {
         browser()
         nodejs()
     }
-    // WASM and similar
-    @OptIn(ExperimentalWasmDsl::class)
-    wasmJs {
+    // Wasm
+    /*wasmJs {
         browser()
         nodejs()
     }
-    @OptIn(ExperimentalWasmDsl::class)
     wasmWasi { nodejs() }*/
     // Android
     androidTarget {
+        /*@OptIn(ExperimentalKotlinGradlePluginApi::class)
+        compilerOptions {
+            jvmTarget.set(JvmTarget.JVM_11)
+        }*/
         publishLibraryVariants("release")
     }
     androidNativeArm32()
@@ -68,7 +66,6 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
-            implementation(libs.kotlin.coroutines.core)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
@@ -86,14 +83,15 @@ android {
     defaultConfig {
         minSdk = libs.versions.android.minSdk.get().toInt()
     }
-    /*compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
-    }*/
+    compileOptions {
+        /*sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17*/
+    }
 }
 
+
 mavenPublishing {
-    publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL)
+    //publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL)
 
     //signAllPublications()
 
@@ -102,6 +100,26 @@ mavenPublishing {
      * DO NOT USE FOR SONATYPE NEXUS
      * */
     coordinates(group.toString(), rootProject.name, version.toString())
+
+    publishing {
+        repositories {
+            maven {
+                name = "Repsy"
+                val localProps = Properties()
+                val localPropsFile = file("${rootProject.projectDir.path}/local.properties")
+                if (localPropsFile.exists()) {
+                    localProps.load(localPropsFile.inputStream())
+                }
+                val repsyUsername = localProps.getProperty("repsy.username") ?: System.getenv("REPSY_USERNAME") ?: ""
+                val repsyPassword = localProps.getProperty("repsy.password") ?: System.getenv("REPSY_PASSWORD") ?: ""
+                credentials {
+                    username = repsyUsername
+                    password = repsyPassword
+                }
+                url = uri("https://repo.repsy.io/$repsyUsername/angelos-project")
+            }
+        }
+    }
 
     pom {
         name.set(This.longName)
@@ -131,16 +149,18 @@ mavenPublishing {
     }
 }
 
-tasks.dokkaHtml {
-    dokkaSourceSets {
-        named("commonMain"){
-            moduleName.set(This.longName)
-            includes.from("Module.md")
-            sourceLink {
-                localDirectory.set(file("src/commonMain/kotlin"))
-                remoteUrl.set(URL(This.url + "/tree/master/src/commonMain/kotlin"))
-                remoteLineSuffix.set("#L")
-            }
+dokka {
+    dokkaPublications.html {
+        moduleName.set(rootProject.name)
+    }
+
+    pluginsConfiguration.html {
+        footerMessage.set("Copyright (c) 2025-2026 Kristoffer Paulsson.")
+    }
+
+    dokkaSourceSets.commonMain {
+        sourceLink {
+            remoteUrl(This.url + "/tree/master/library")
         }
     }
 }
