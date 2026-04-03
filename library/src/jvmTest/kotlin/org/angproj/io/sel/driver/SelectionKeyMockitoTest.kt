@@ -16,11 +16,18 @@ package org.angproj.io.sel.driver
 
 import org.angproj.io.sel.SelectChannelOperation
 import org.angproj.io.sel.SelectionKey
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 import kotlin.test.Test
+import kotlin.test.assertTrue
 
 class SelectionKeyMockitoTest {
     @Test
     fun testSelectionKey() {
-        //mock(SelectionKey<String, SelectChannelOperation>())
+        val selectionKey = mock<SelectionKey<String, SelectChannelOperation>>()
+
+        whenever(selectionKey.isHandleable(SelectChannelOperation.OP_READ)).thenReturn(true)
+
+        assertTrue { selectionKey.isHandleable(SelectChannelOperation.OP_READ) }
     }
 }

@@ -75,6 +75,9 @@ kotlin {
         androidMain.dependencies {
             implementation(libs.kotlin.coroutines.android)
         }
+        jvmMain.dependencies {
+            implementation(libs.kotlin.mockito)
+        }
     }
 }
 
