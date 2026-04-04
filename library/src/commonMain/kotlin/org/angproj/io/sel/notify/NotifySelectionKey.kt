@@ -21,7 +21,7 @@ public class NotifySelectionKey<A>(
     selector: AbstractSelector,
     item: SelectableNotify,
 ) : AbstractSelectionKey<A, SelectNotifyOperation>(selector, item) {
-    public fun isNotifiable(): Boolean = (readyOps() and SelectNotifyOperation.OP_NOTIFY.toInt()) != 0
+    public fun isNotifiable(): Boolean = isHandleable(SelectNotifyOperation.OP_NOTIFY)
 
-    public fun isClosable(): Boolean = (readyOps() and SelectNotifyOperation.OP_CLOSE.toInt()) != 0
+    public fun isClosable(): Boolean = isHandleable(SelectNotifyOperation.OP_CLOSE)
 }

@@ -14,6 +14,10 @@
  */
 package org.angproj.io.sel.driver
 
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
@@ -25,3 +29,7 @@ public class Dispenser<T>(private val dispensable: T) {
         sync(dispensable)
     }
 }
+
+public fun task(action: suspend CoroutineScope.() -> Unit): Job = CoroutineScope(Dispatchers.Default).launch {
+    action()
+}.apply { start() }

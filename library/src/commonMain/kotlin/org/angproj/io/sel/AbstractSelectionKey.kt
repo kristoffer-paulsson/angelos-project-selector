@@ -14,6 +14,8 @@
  */
 package org.angproj.io.sel
 
+import org.angproj.io.sel.driver.task
+
 
 /**
  * A fully functional abstract base for selection keys, using [SelectOperation] for operation sets.
@@ -72,7 +74,7 @@ public abstract class AbstractSelectionKey<A, E : SelectOperation<*>>(
     override fun cancel() {
         if (_valid) {
             _valid = false
-            selector.deregister(this)
+            task { selector.deregister(this as AbstractSelectionKey<A, E>) }
         }
     }
 

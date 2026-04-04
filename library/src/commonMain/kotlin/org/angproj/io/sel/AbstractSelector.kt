@@ -41,11 +41,11 @@ public abstract class AbstractSelector : Selector {
 
     protected abstract fun cancelledKeys(): Set<SelectionKey<*, *>>
 
-    internal abstract fun deregister(key: AbstractSelectionKey<*, *>)
+    internal abstract suspend fun deregister(key: AbstractSelectionKey<*, *>)
 
     //protected void	end()
 
-    protected abstract fun implCloseSelector()
+    protected abstract suspend fun implCloseSelector()
 
     protected abstract suspend fun<A, E : SelectOperation<*>> register(
         item: AbstractSelectableItem,

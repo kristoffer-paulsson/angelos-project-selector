@@ -22,11 +22,11 @@ public class ChannelSelectionKey<A>(
     item: SelectableChannel,
 ) : AbstractSelectionKey<A, SelectChannelOperation>(selector, item) {
 
-    public fun isAcceptable(): Boolean = (readyOps() and SelectChannelOperation.OP_ACCEPT.toInt()) != 0
+    public fun isAcceptable(): Boolean = isHandleable(SelectChannelOperation.OP_ACCEPT)
 
-    public fun isConnectable(): Boolean = (readyOps() and SelectChannelOperation.OP_CONNECT.toInt()) != 0
+    public fun isConnectable(): Boolean = isHandleable(SelectChannelOperation.OP_CONNECT)
 
-    public fun isReadable(): Boolean = (readyOps() and SelectChannelOperation.OP_READ.toInt()) != 0
+    public fun isReadable(): Boolean = isHandleable(SelectChannelOperation.OP_READ)
 
-    public fun isWritable(): Boolean = (readyOps() and SelectChannelOperation.OP_WRITE.toInt()) != 0
+    public fun isWritable(): Boolean = isHandleable(SelectChannelOperation.OP_WRITE)
 }

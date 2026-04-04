@@ -35,17 +35,20 @@ public object Driver : SelectorProvider {
 
     private fun buildSelector(): Selector = object : AbstractSelector() {
 
+        private var _closed = false
+
         private val allKeys: Dispenser<HashSet<SelectionKey<*, *>>> = Dispenser(hashSetOf())
         private val selected: Dispenser<HashSet<SelectionKey<*, *>>> = Dispenser(hashSetOf())
         private val cancelled: Dispenser<HashSet<SelectionKey<*, *>>> = Dispenser(hashSetOf())
 
         override fun close() {
-            TODO("Not yet implemented")
+            if (!_closed) {
+                _closed = true
+                task { implCloseSelector() }
+            }
         }
 
-        override fun isOpen(): Boolean {
-            TODO("Not yet implemented")
-        }
+        override fun isOpen(): Boolean = !_closed
 
         override fun keys(): Set<SelectionKey<*, *>> {
             TODO("Not yet implemented")
@@ -77,12 +80,23 @@ public object Driver : SelectorProvider {
             TODO("Not yet implemented")
         }
 
-        override fun deregister(key: AbstractSelectionKey<*, *>) {
-            TODO("Not yet implemented")
+        override suspend fun deregister(key: AbstractSelectionKey<*, *>) {
+            require(!key.isValid()) { "Key must be cancelled before deregistration" }
+            cancelled.dispense { keys -> keys.remove(key) }
+            selected.dispense { keys -> keys.remove(key) }
+            allKeys.dispense { keys -> keys.remove(key) }
         }
 
-        override fun implCloseSelector() {
-            TODO("Not yet implemented")
+        override suspend fun implCloseSelector() {
+            allKeys.dispense { keys ->
+                keys.forEach { key ->
+                    key.takeIf { it.isValid() }?.cancel()
+                    keys.remove(key)
+                }
+            }
+            cancelled.dispense { keys ->
+                keys.clear()
+            }
         }
 
         override suspend fun <A, E : SelectOperation<*>> register(
@@ -91,11 +105,13 @@ public object Driver : SelectorProvider {
             attachment: A,
             build: AbstractSelector.(AbstractSelectableItem) -> SelectionKey<A, E>
         ): SelectionKey<A, E> {
+            check(isOpen()) { "Selector is closed" }
+
             val selectionKey = build(item)
             selectionKey.interestOps(*ops)
             selectionKey.attach(attachment)
-            allKeys.dispense {
-                it.add(selectionKey)
+            allKeys.dispense { keys ->
+                keys.add(selectionKey)
             }
             return selectionKey
         }
