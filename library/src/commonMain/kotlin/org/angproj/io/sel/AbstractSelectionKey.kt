@@ -66,19 +66,6 @@ public abstract class AbstractSelectionKey<A, E: SelectOperation<*>>(
 
     override fun isHandleable(op: E): Boolean = (readyOps() and op.toInt()) != 0
 
-
-    /*override fun isAcceptable(): Boolean =
-        (readyOps() and SelectOperation.OP_ACCEPT.toInt()) != 0
-
-    override fun isConnectable(): Boolean =
-        (readyOps() and SelectOperation.OP_CONNECT.toInt()) != 0
-
-    override fun isReadable(): Boolean =
-        (readyOps() and SelectOperation.OP_READ.toInt()) != 0
-
-    override fun isWritable(): Boolean =
-        (readyOps() and SelectOperation.OP_WRITE.toInt()) != 0*/
-
     override fun isValid(): Boolean = _valid
 
     override fun cancel() {
