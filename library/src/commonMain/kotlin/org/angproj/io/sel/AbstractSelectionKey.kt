@@ -45,10 +45,10 @@ public abstract class AbstractSelectionKey<A, E: SelectOperation<*>>(
         return _interestOps
     }
 
-    override fun interestOps(ops: Int): AbstractSelectionKey<A, E> {
+    override fun interestOps(vararg ops: E): AbstractSelectionKey<A, E> {
         ensureValid()
-        //require((ops and _channel.validOps().inv()) == 0) { "Invalid interest ops for channel" }
-        _interestOps = ops
+        require(ops.isNotEmpty()) { "Invalid interest ops for channel" }
+        _interestOps = ops.sumOf { it.toInt() }
         return this
     }
 

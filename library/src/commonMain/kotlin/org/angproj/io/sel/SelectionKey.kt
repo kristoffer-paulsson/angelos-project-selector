@@ -68,7 +68,7 @@ public interface SelectionKey<A, E: SelectOperation<*>> {
      * @param ops the new interest set
      * @return this selection key
      */
-    public fun interestOps(ops: Int): SelectionKey<A, E>
+    public fun interestOps(vararg ops: E): SelectionKey<A, E>
 
     /**
      * Retrieves this key's ready set.

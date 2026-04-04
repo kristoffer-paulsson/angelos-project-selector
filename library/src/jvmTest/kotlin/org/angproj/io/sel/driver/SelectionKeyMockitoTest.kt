@@ -74,9 +74,9 @@ class SelectionKeyMockitoTest {
     fun testInterestOps() {
         val selectionKey = mock<SelectionKey<String, SelectChannelOperation>>()
 
-        whenever(selectionKey.interestOps(SelectChannelOperation.OP_READ.toInt())).thenReturn(selectionKey)
+        whenever(selectionKey.interestOps(SelectChannelOperation.OP_READ)).thenReturn(selectionKey)
 
-        assertTrue { selectionKey.interestOps(SelectChannelOperation.OP_READ.toInt()) === selectionKey }
+        assertTrue { selectionKey.interestOps(SelectChannelOperation.OP_READ) === selectionKey }
     }
 
     @Test
