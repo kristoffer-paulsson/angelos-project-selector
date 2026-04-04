@@ -12,11 +12,13 @@
  * Contributors:
  *      Kristoffer Paulsson - initial implementation
  */
-package org.angproj.io.sel
+package org.angproj.io.sel.channel
 
-public interface SelectOperation<E: Enum<E>> {
-    public val operation: Int
+import org.angproj.io.sel.SelectOperation
 
-    public fun toInt(): Int = operation
+public enum class SelectChannelOperation(override val operation: Int): SelectOperation<SelectChannelOperation> {
+    OP_ACCEPT(16),
+    OP_CONNECT(8),
+    OP_READ(1),
+    OP_WRITE(4);
 }
-

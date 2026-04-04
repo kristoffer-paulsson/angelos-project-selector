@@ -12,11 +12,15 @@
  * Contributors:
  *      Kristoffer Paulsson - initial implementation
  */
-package org.angproj.io.sel
+package org.angproj.io.sel.channel
 
-public interface SelectOperation<E: Enum<E>> {
-    public val operation: Int
+import org.angproj.io.sel.AbstractSelectableItem
 
-    public fun toInt(): Int = operation
+public class SelectableChannel : AbstractSelectableItem() {
+    override val isOpen: Boolean
+        get() = TODO("Not yet implemented")
+
+    override fun close() {
+        TODO("Not yet implemented")
+    }
 }
-

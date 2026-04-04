@@ -12,11 +12,14 @@
  * Contributors:
  *      Kristoffer Paulsson - initial implementation
  */
-package org.angproj.io.sel
+package org.angproj.io.sel.channel
 
-public interface SelectOperation<E: Enum<E>> {
-    public val operation: Int
+import org.angproj.io.sel.AbstractSelectionKey
+import org.angproj.io.sel.AbstractSelector
 
-    public fun toInt(): Int = operation
+public class ChannelSelectionKey<A>(
+    selector: AbstractSelector,
+    item: SelectableChannel,
+    attachment: A
+) : AbstractSelectionKey<A, SelectChannelOperation>(selector, item, attachment) {
 }
-

@@ -14,10 +14,10 @@
  */
 package org.angproj.io.sel.driver
 
-import org.angproj.io.sel.SelectChannelOperation
 import org.angproj.io.sel.SelectableItem
 import org.angproj.io.sel.SelectionKey
 import org.angproj.io.sel.Selector
+import org.angproj.io.sel.channel.SelectChannelOperation
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
