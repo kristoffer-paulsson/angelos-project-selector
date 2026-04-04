@@ -64,7 +64,7 @@ public abstract class AbstractSelectionKey<A, E: SelectOperation<*>>(
         _readyOps = ops
     }
 
-    //override fun isHandleable(op: E): Boolean = (readyOps() and op.toInt()) != 0
+    override fun isHandleable(op: E): Boolean = (readyOps() and op.toInt()) != 0
 
 
     /*override fun isAcceptable(): Boolean =

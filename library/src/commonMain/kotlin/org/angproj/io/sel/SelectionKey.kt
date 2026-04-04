@@ -87,28 +87,28 @@ public interface SelectionKey<A, E: SelectOperation<*>> {
      *
      * @return true if acceptable
      */
-    public fun isAcceptable(): Boolean
+    //public fun isAcceptable(): Boolean
 
     /**
      * Tells whether this key's channel is ready to complete its connection sequence.
      *
      * @return true if connectable
      */
-    public fun isConnectable(): Boolean
+    //public fun isConnectable(): Boolean
 
     /**
      * Tells whether this key's channel is ready for reading.
      *
      * @return true if readable
      */
-    public fun isReadable(): Boolean
+    //public fun isReadable(): Boolean
 
     /**
      * Tells whether this key's channel is ready for writing.
      *
      * @return true if writable
      */
-    public fun isWritable(): Boolean
+    //public fun isWritable(): Boolean
 
     /**
      * Tells whether this key is valid.

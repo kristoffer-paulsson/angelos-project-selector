@@ -15,19 +15,103 @@
 package org.angproj.io.sel.driver
 
 import org.angproj.io.sel.SelectChannelOperation
+import org.angproj.io.sel.SelectableItem
 import org.angproj.io.sel.SelectionKey
+import org.angproj.io.sel.Selector
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class SelectionKeyMockitoTest {
     @Test
-    fun testSelectionKey() {
+    fun testSelector() {
+        val selectionKey = mock<SelectionKey<String, SelectChannelOperation>>()
+        val selector = mock<Selector> {}
+
+        whenever(selectionKey.selector()).thenReturn(selector)
+
+        assertTrue { selectionKey.selector() === selector }
+    }
+
+    @Test
+    fun testAttach() {
+        val selectionKey = mock<SelectionKey<String, SelectChannelOperation>>()
+        val attachment = "Hello, World"
+
+        whenever(selectionKey.attach(attachment)).then {
+            selectionKey.attachment() == attachment
+        }
+
+        whenever(selectionKey.attach(attachment)).then {
+            verify(selectionKey).attach(attachment)
+        }
+    }
+
+    @Test
+    fun testAttachment() {
+        val selectionKey = mock<SelectionKey<String, SelectChannelOperation>>()
+        val attachment = "Hello, World"
+
+        whenever(selectionKey.attachment()).thenReturn(attachment)
+
+        assertEquals(selectionKey.attachment(), attachment)
+    }
+
+    @Test
+    fun testItem() {
+        val selectionKey = mock<SelectionKey<String, SelectChannelOperation>>()
+        val item = mock<SelectableItem> {}
+
+        whenever(selectionKey.item()).thenReturn(item)
+
+        assertTrue { selectionKey.item() === item }
+    }
+
+    @Test
+    fun testInterestOps() {
+        val selectionKey = mock<SelectionKey<String, SelectChannelOperation>>()
+
+        whenever(selectionKey.interestOps(SelectChannelOperation.OP_READ.toInt())).thenReturn(selectionKey)
+
+        assertTrue { selectionKey.interestOps(SelectChannelOperation.OP_READ.toInt()) === selectionKey }
+    }
+
+    @Test
+    fun testInterestOpsEmpty() {
+        val selectionKey = mock<SelectionKey<String, SelectChannelOperation>>()
+
+        whenever(selectionKey.interestOps()).thenReturn(0)
+
+        assertTrue { selectionKey.interestOps() == 0 }
+    }
+
+    @Test
+    fun testIsHandleable() {
         val selectionKey = mock<SelectionKey<String, SelectChannelOperation>>()
 
         whenever(selectionKey.isHandleable(SelectChannelOperation.OP_READ)).thenReturn(true)
 
         assertTrue { selectionKey.isHandleable(SelectChannelOperation.OP_READ) }
+    }
+
+    @Test
+    fun testIsValid() {
+        val selectionKey = mock<SelectionKey<String, SelectChannelOperation>>()
+
+        whenever(selectionKey.isValid()).thenReturn(true)
+
+        assertTrue { selectionKey.isValid() }
+    }
+
+    @Test
+    fun testCancel() {
+        val selectionKey = mock<SelectionKey<String, SelectChannelOperation>>()
+
+        whenever(selectionKey.cancel()).then {
+                verify(selectionKey).cancel()
+        }
     }
 }
