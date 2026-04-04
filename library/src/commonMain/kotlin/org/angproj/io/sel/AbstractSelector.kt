@@ -35,7 +35,7 @@ public abstract class AbstractSelector : Selector {
 
     abstract override fun selectNow(): Int
 
-    abstract override fun wakeup(): Selector
+    abstract override suspend fun wakeup(): Selector
 
     //protected void	begin()
 
@@ -47,5 +47,10 @@ public abstract class AbstractSelector : Selector {
 
     protected abstract fun implCloseSelector()
 
-    protected abstract fun<A> register(channel: AbstractSelectableItem, ops: Int, att: A): SelectionKey<A, *>
+    protected abstract suspend fun<A, E : SelectOperation<*>> register(
+        item: AbstractSelectableItem,
+        vararg ops: E,
+        attachment: A,
+        build: AbstractSelector.(AbstractSelectableItem) -> SelectionKey<A, E>
+    ): SelectionKey<A, *>
 }

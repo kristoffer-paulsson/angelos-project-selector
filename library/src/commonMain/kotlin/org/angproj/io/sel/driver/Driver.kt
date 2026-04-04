@@ -17,6 +17,7 @@ package org.angproj.io.sel.driver
 import org.angproj.io.sel.AbstractSelectableItem
 import org.angproj.io.sel.AbstractSelectionKey
 import org.angproj.io.sel.AbstractSelector
+import org.angproj.io.sel.SelectOperation
 import org.angproj.io.sel.SelectionKey
 import org.angproj.io.sel.Selector
 import org.angproj.io.sel.SelectorProvider
@@ -33,6 +34,11 @@ public object Driver : SelectorProvider {
     }
 
     private fun buildSelector(): Selector = object : AbstractSelector() {
+
+        private val allKeys: Dispenser<HashSet<SelectionKey<*, *>>> = Dispenser(hashSetOf())
+        private val selected: Dispenser<HashSet<SelectionKey<*, *>>> = Dispenser(hashSetOf())
+        private val cancelled: Dispenser<HashSet<SelectionKey<*, *>>> = Dispenser(hashSetOf())
+
         override fun close() {
             TODO("Not yet implemented")
         }
@@ -45,9 +51,7 @@ public object Driver : SelectorProvider {
             TODO("Not yet implemented")
         }
 
-        override fun provider(): SelectorProvider {
-            TODO("Not yet implemented")
-        }
+        override fun provider(): SelectorProvider = this@Driver
 
         override fun select(): Int {
             TODO("Not yet implemented")
@@ -65,7 +69,7 @@ public object Driver : SelectorProvider {
             TODO("Not yet implemented")
         }
 
-        override fun wakeup(): Selector {
+        override suspend fun wakeup(): Selector {
             TODO("Not yet implemented")
         }
 
@@ -81,12 +85,19 @@ public object Driver : SelectorProvider {
             TODO("Not yet implemented")
         }
 
-        override fun<A> register(
-            channel: AbstractSelectableItem,
-            ops: Int,
-            att: A
-        ): SelectionKey<A, *> {
-            TODO("Not yet implemented")
+        override suspend fun <A, E : SelectOperation<*>> register(
+            item: AbstractSelectableItem,
+            vararg ops: E,
+            attachment: A,
+            build: AbstractSelector.(AbstractSelectableItem) -> SelectionKey<A, E>
+        ): SelectionKey<A, E> {
+            val selectionKey = build(item)
+            selectionKey.interestOps(*ops)
+            selectionKey.attach(attachment)
+            allKeys.dispense {
+                it.add(selectionKey)
+            }
+            return selectionKey
         }
     }
 }

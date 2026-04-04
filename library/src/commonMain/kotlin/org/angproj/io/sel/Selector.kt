@@ -33,7 +33,7 @@ public interface Selector {
 
     public fun selectNow(): Int
 
-    public fun wakeup(): Selector
+    public suspend fun wakeup(): Selector
 
     public companion object {
          //public fun	open(): Selector { return }

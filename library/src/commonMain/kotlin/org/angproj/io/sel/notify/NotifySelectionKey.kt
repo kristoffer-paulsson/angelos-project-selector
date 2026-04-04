@@ -20,8 +20,7 @@ import org.angproj.io.sel.AbstractSelector
 public class NotifySelectionKey<A>(
     selector: AbstractSelector,
     item: SelectableNotify,
-    attachment: A
-) : AbstractSelectionKey<A, SelectNotifyOperation>(selector, item, attachment) {
+) : AbstractSelectionKey<A, SelectNotifyOperation>(selector, item) {
     public fun isNotifiable(): Boolean = (readyOps() and SelectNotifyOperation.OP_NOTIFY.toInt()) != 0
 
     public fun isClosable(): Boolean = (readyOps() and SelectNotifyOperation.OP_CLOSE.toInt()) != 0

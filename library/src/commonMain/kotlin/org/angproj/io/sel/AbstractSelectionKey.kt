@@ -18,11 +18,12 @@ package org.angproj.io.sel
 /**
  * A fully functional abstract base for selection keys, using [SelectOperation] for operation sets.
  */
-public abstract class AbstractSelectionKey<A, E: SelectOperation<*>>(
+public abstract class AbstractSelectionKey<A, E : SelectOperation<*>>(
     protected val selector: AbstractSelector,
     protected val item: SelectableItem,
-    protected var attachment: A
 ) : SelectionKey<A, E> {
+
+    private var attachment: A? = null
 
     private var _interestOps: Int = 0
 
@@ -38,7 +39,7 @@ public abstract class AbstractSelectionKey<A, E: SelectOperation<*>>(
         attachment = obj
     }
 
-    override fun attachment(): A = attachment
+    override fun attachment(): A = attachment ?: throw IllegalStateException("No attachment for selection key")
 
     override fun interestOps(): Int {
         ensureValid()
@@ -77,9 +78,5 @@ public abstract class AbstractSelectionKey<A, E: SelectOperation<*>>(
 
     private fun ensureValid() {
         if (!_valid) throw CancelledKeyException()
-    }
-
-    public companion object {
-        public val nullAttachment: Any = object {}
     }
 }

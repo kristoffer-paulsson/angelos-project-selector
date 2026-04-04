@@ -20,8 +20,7 @@ import org.angproj.io.sel.AbstractSelector
 public class ChannelSelectionKey<A>(
     selector: AbstractSelector,
     item: SelectableChannel,
-    attachment: A
-) : AbstractSelectionKey<A, SelectChannelOperation>(selector, item, attachment) {
+) : AbstractSelectionKey<A, SelectChannelOperation>(selector, item) {
 
     public fun isAcceptable(): Boolean = (readyOps() and SelectChannelOperation.OP_ACCEPT.toInt()) != 0
 
