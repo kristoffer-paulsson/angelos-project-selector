@@ -31,6 +31,8 @@ package org.angproj.io.sel
  */
 public interface SelectionKey<A, E: SelectOperation<*>> {
 
+    public fun doHandle()
+
     /**
      * Returns the selector with which this key is registered.
      */
@@ -81,34 +83,6 @@ public interface SelectionKey<A, E: SelectOperation<*>> {
      *
      */
     public fun isHandleable(op: E): Boolean
-
-    /**
-     * Tells whether this key's channel is ready to accept a new socket connection.
-     *
-     * @return true if acceptable
-     */
-    //public fun isAcceptable(): Boolean
-
-    /**
-     * Tells whether this key's channel is ready to complete its connection sequence.
-     *
-     * @return true if connectable
-     */
-    //public fun isConnectable(): Boolean
-
-    /**
-     * Tells whether this key's channel is ready for reading.
-     *
-     * @return true if readable
-     */
-    //public fun isReadable(): Boolean
-
-    /**
-     * Tells whether this key's channel is ready for writing.
-     *
-     * @return true if writable
-     */
-    //public fun isWritable(): Boolean
 
     /**
      * Tells whether this key is valid.

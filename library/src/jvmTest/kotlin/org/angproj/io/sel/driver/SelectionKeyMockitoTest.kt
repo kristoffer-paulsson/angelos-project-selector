@@ -27,6 +27,15 @@ import kotlin.test.assertTrue
 
 class SelectionKeyMockitoTest {
     @Test
+    fun testDoHandle() {
+        val selectionKey = mock<SelectionKey<String, SelectChannelOperation>>()
+
+        whenever(selectionKey.doHandle()).then {
+            verify(selectionKey).doHandle()
+        }
+    }
+
+    @Test
     fun testSelector() {
         val selectionKey = mock<SelectionKey<String, SelectChannelOperation>>()
         val selector = mock<Selector> {}

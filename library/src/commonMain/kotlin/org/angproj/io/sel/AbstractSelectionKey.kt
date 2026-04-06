@@ -23,6 +23,7 @@ import org.angproj.io.sel.driver.task
 public abstract class AbstractSelectionKey<A, E : SelectOperation<*>>(
     protected val selector: AbstractSelector,
     protected val item: SelectableItem,
+    protected val handler: suspend AbstractSelectionKey<A, E>.() -> Unit
 ) : SelectionKey<A, E> {
 
     private var attachment: A? = null
@@ -32,6 +33,10 @@ public abstract class AbstractSelectionKey<A, E : SelectOperation<*>>(
     private var _readyOps: Int = 0
 
     private var _valid: Boolean = true
+
+    override fun doHandle() {
+        task { handler() }
+    }
 
     override fun selector(): Selector = selector
 
@@ -74,7 +79,7 @@ public abstract class AbstractSelectionKey<A, E : SelectOperation<*>>(
     override fun cancel() {
         if (_valid) {
             _valid = false
-            task { selector.deregister(this as AbstractSelectionKey<A, E>) }
+            task { selector.deregister(this@AbstractSelectionKey) }
         }
     }
 

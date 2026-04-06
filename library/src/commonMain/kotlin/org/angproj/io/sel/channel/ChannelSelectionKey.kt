@@ -20,7 +20,8 @@ import org.angproj.io.sel.AbstractSelector
 public class ChannelSelectionKey<A>(
     selector: AbstractSelector,
     item: SelectableChannel,
-) : AbstractSelectionKey<A, SelectChannelOperation>(selector, item) {
+    handler: suspend AbstractSelectionKey<A, SelectChannelOperation>.() -> Unit,
+) : AbstractSelectionKey<A, SelectChannelOperation>(selector, item, handler) {
 
     public fun isAcceptable(): Boolean = isHandleable(SelectChannelOperation.OP_ACCEPT)
 
