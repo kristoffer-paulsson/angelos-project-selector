@@ -19,7 +19,25 @@ import kotlin.test.assertEquals
 
 public class ColorGenerator {
     internal fun lightnessLoop(action: (Int, Float) -> Unit) {
-        (0 until 7 step 1).forEach { action(it, (6.0-it).toFloat() / 6.0f) }
+        (0 until 7 step 1).forEach { action(it, lightnessPlane(it)) }
+    }
+
+    internal fun lightnessPlane(plane: Int): Float = (6.0-plane).toFloat() / 6.0f
+
+    internal fun lightnessLevel(plane: Int, levelCount: Int, action: (Int, Float) -> Unit) {
+        val levels = mapOf<Int, Pair<Float, Float>>(
+            0 to Pair(7/7f, 7/7f),
+            1 to Pair(6/7f, 5/7f),
+            2 to Pair(5/7f, 4/7f),
+            3 to Pair(4/7f, 3/7f),
+            4 to Pair(3/7f, 2/7f),
+            5 to Pair(2/7f, 1/7f),
+            6 to Pair(/*7/1f*/ 0f, 0f)
+            )
+        val level = levels[plane]!!
+        val distance = level.first - level.second
+
+        (0 until levelCount step 1).forEach { action(it, level.first - (it.toFloat() / levelCount * distance)) }
     }
 
     internal fun colorCountLoop(action: (Int) -> Unit) {
@@ -31,8 +49,10 @@ public class ColorGenerator {
         return colorCount[slice]
     }
 
+    internal fun hue(colorCount: Int, slice: Int): Float = slice.toFloat() / colorCount.toFloat()
+
     internal fun hueSliceLoop(colorCount: Int, action: (Float) -> Unit) {
-        (0 until colorCount step 1).forEach { action(it.toFloat() / colorCount.toFloat()) }
+        (0 until colorCount step 1).forEach { action(hue(colorCount, it)) }
     }
 
     fun hslToRgb(h: Float, s: Float, l: Float): Triple<Float, Float, Float> {
@@ -75,14 +95,39 @@ class ColorGeneratorTest {
     @Test
     fun generatePalette() {
         val cg = ColorGenerator()
-        var c = 0
-        cg.lightnessLoop { p, l ->
+        var cnt = 0
+        cg.lightnessLoop { p, u ->
+            val c = cg.colorCount(p)
+            cg.lightnessLevel(p, c) { f, ll ->
+                val h = cg.hue(c, f)
+                //println("c: ${cnt+1}, p: ${p+1}, h: $h, s: 1.0, l: $ll")
+                println("'${cg.hslToRgb(h, 1.0f, ll).toHexString()}',")
+                cnt++
+            }
+        }
+        /*cg.lightnessLoop { p, l ->
             cg.hueSliceLoop(cg.colorCount(p)) { h ->
                 //println("c: ${c+1}, p: ${p+1}, h: $h, s: 1.0, l: $l")
                 println("$c: " + cg.hslToRgb(h, 1.0f, l).toHexString())
                 c++
             }
-        }
+        }*/
+    }
+
+    @Test
+    fun testLightnessPlane() {
+        val cg = ColorGenerator()
+
+        println(cg.lightnessPlane(6))
+    }
+
+    @Test
+    fun testLightnessLevel() {
+        var cnt = 0
+        /*ColorGenerator().lightnessLevel(1f, 0f, 100) { f, ll ->
+            //assertEquals((100-f).toFloat() / 100.0f, ll )
+            cnt++
+        }*/
     }
 
     @Test
