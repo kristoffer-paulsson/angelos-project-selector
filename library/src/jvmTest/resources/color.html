@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>16×16 Color Table • 256-Color Palette</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: #f8f9fa;
+            padding: 40px 20px; /* padding at start and end of page */
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            width: 100%;
+            max-width: 900px;
+        }
+
+        h1 {
+            font-size: 28px;
+            font-weight: 500;
+            color: #1f2937;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            font-size: 16px;
+            color: #6b7280;
+            font-weight: 400;
+        }
+
+        .color-grid {
+            display: grid;
+            grid-template-columns: repeat(16, 48px);
+            gap: 4px;
+            background: #ffffff;
+            padding: 12px; /* padding inside the table container */
+            border-radius: 16px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1),
+            0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            border: 3px solid #e5e7eb;
+            max-width: fit-content;
+        }
+
+        .color-cell {
+            width: 48px;
+            height: 48px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1),
+            0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .color-cell:hover {
+            transform: scale(1.12);
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.3);
+            z-index: 10;
+        }
+
+        .color-cell:active {
+            transform: scale(0.95);
+        }
+
+        .footer {
+            margin-top: 40px;
+            text-align: center;
+            color: #6b7280;
+            font-size: 14px;
+            max-width: 900px;
+            width: 100%;
+        }
+
+        .footer a {
+            color: #3b82f6;
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+<div class="header">
+    <h1>16×16 Color Table</h1>
+    <p class="subtitle">256-color palette • Generated from provided hex values • Hover for hex code • Click to copy</p>
+</div>
+
+<div id="colorGrid" class="color-grid"></div>
+
+<div class="footer">
+    <p>Colors used exactly in the order provided • Table padded at start and end • Pure HTML/CSS/JS (no external libraries)</p>
+    <p style="margin-top: 12px;">
+        Total colors: <strong id="count">0</strong> •
+        <a href="#" onclick="copyAllColors(); return false;">Copy all hex codes to clipboard</a>
+    </p>
+</div>
+
+<script>
+    // All colors exactly as provided by the user
+    const colors = [
+        "#FFFFFF","#FEAAAA","#FEBCAA","#FECEAA","#FEE0AA","#FEF2AA","#F8FEAA","#E6FEAA","#D4FEAA","#C2FEAA","#B0FEAA","#AAFEB6","#AAFEC8","#AAFEDA","#AAFEEC","#AAFFFE","#AAECFE","#AADAFE","#AAC8FE","#AAB6FE",
+        "#B0AAFE","#C2AAFE","#D4AAFE","#E6AAFE","#F8AAFE","#FEAAF2","#FEAAE0","#FEAACE","#FEAABC","#FF5555","#FF6755","#FF7955","#FF8B55","#FF9D55","#FFB055","#FFC255","#FFD455","#FFE655","#FFF855",
+        "#F2FF55","#E0FF55","#CEFF55","#BCFF55","#A9FF55","#97FF55","#85FF55","#73FF55","#61FF55","#55FF5B","#55FF6D","#55FF7F","#55FF91","#55FFA3","#55FFB6","#55FFC8","#55FFDA","#55FFEC","#55FFFE",
+        "#55ECFF","#55DAFF","#55C8FF","#55B6FF","#55A3FF","#5591FF","#557FFF","#556DFF","#555BFF","#6155FF","#7355FF","#8555FF","#9755FF","#AA55FF","#BC55FF","#CE55FF","#E055FF","#F255FF","#FF55F8",
+        "#FF55E6","#FF55D4","#FF55C2","#FF55B0","#FF559D","#FF558B","#FF5579","#FF5567","#FF0000","#FF1200","#FF2400","#FF3600","#FF4800","#FF5B00","#FF6D00","#FF7F00","#FF9100","#FFA300","#FFB600",
+        "#FFC800","#FFDA00","#FFEC00","#FFFF00","#ECFF00","#DAFF00","#C8FF00","#B6FF00","#A3FF00","#91FF00","#7FFF00","#6DFF00","#5BFF00","#48FF00","#36FF00","#24FF00","#12FF00","#00FF00","#00FF12",
+        "#00FF24","#00FF36","#00FF48","#00FF5B","#00FF6D","#00FF7F","#00FF91","#00FFA3","#00FFB6","#00FFC8","#00FFDA","#00FFEC","#00FFFE","#00ECFF","#00DAFF","#00C8FF","#00B6FF","#00A3FF","#0091FF",
+        "#007FFF","#006DFF","#005BFF","#0048FF","#0036FF","#0024FF","#0012FF","#0000FF","#1200FF","#2400FF","#3600FF","#4800FF","#5B00FF","#6D00FF","#7F00FF","#9100FF","#A300FF","#B600FF","#C800FF",
+        "#DA00FF","#EC00FF","#FE00FF","#FF00EC","#FF00DA","#FF00C8","#FF00B6","#FF00A3","#FF0091","#FF007F","#FF006D","#FF005B","#FF0048","#FF0036","#FF0024","#FF0012","#AA0000","#AA1200","#AA2400",
+        "#AA3600","#AA4800","#AA5B00","#AA6D00","#AA7F00","#AA9100","#AAA300","#9DAA00","#8BAA00","#79AA00","#67AA00","#54AA00","#42AA00","#30AA00","#1EAA00","#0CAA00","#00AA06","#00AA18","#00AA2A",
+        "#00AA3C","#00AA4E","#00AA61","#00AA73","#00AA85","#00AA97","#00AAA9","#0097AA","#0085AA","#0073AA","#0061AA","#004EAA","#003CAA","#002AAA","#0018AA","#0006AA","#0C00AA","#1E00AA","#3000AA",
+        "#4200AA","#5500AA","#6700AA","#7900AA","#8B00AA","#9D00AA","#AA00A3","#AA0091","#AA007F","#AA006D","#AA005B","#AA0048","#AA0036","#AA0024","#AA0012","#550000","#551200","#552400","#553600",
+        "#554800","#4E5500","#3C5500","#2A5500","#185500","#065500","#00550C","#00551E","#005530","#005542","#005554","#004255","#003055","#001E55","#000C55","#060055","#180055","#2A0055","#3C0055",
+        "#4E0055","#550048","#550036","#550024","#550012","#000000"
+    ];
+
+    // Generate the 16×16 grid
+    function generateTable() {
+        const grid = document.getElementById('colorGrid');
+        grid.innerHTML = '';
+
+        colors.forEach((color, index) => {
+            const cell = document.createElement('div');
+            cell.className = 'color-cell';
+            cell.style.backgroundColor = color;
+            cell.title = `${color} (index ${index + 1})`;
+
+            // Click to copy hex code
+            cell.addEventListener('click', () => {
+                navigator.clipboard.writeText(color).then(() => {
+                    const originalTitle = cell.title;
+                    cell.title = '✓ Copied!';
+                    setTimeout(() => {
+                        cell.title = originalTitle;
+                    }, 1200);
+                });
+            });
+
+            grid.appendChild(cell);
+        });
+
+        // Update count in footer
+        document.getElementById('count').textContent = colors.length;
+
+        // If we have fewer than 256, add empty padded cells to keep perfect 16×16 grid
+        const missing = 256 - colors.length;
+        for (let i = 0; i < missing; i++) {
+            const empty = document.createElement('div');
+            empty.className = 'color-cell';
+            empty.style.backgroundColor = '#f1f5f9';
+            empty.style.border = '2px dashed #cbd5e1';
+            empty.title = 'Padding cell (end of list)';
+            grid.appendChild(empty);
+        }
+    }
+
+    // Copy all colors as a list
+    function copyAllColors() {
+        const text = colors.join('\n');
+        navigator.clipboard.writeText(text).then(() => {
+            const footer = document.querySelector('.footer p:first-child');
+            const original = footer.innerHTML;
+            footer.innerHTML = '✅ All hex codes copied to clipboard!';
+            setTimeout(() => {
+                footer.innerHTML = original;
+            }, 2500);
+        });
+    }
+
+    // Initialize when page loads
+    window.onload = generateTable;
+</script>
+</body>
+</html>
