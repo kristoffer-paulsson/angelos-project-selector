@@ -34,7 +34,7 @@ public class Dispenser<T>(private val dispensable: T) {
 
     private val mutex = Mutex()
 
-    public suspend fun dispense(sync: (suspend (T) -> Unit)): Unit = mutex.withLock(dispensable) {
+    public suspend fun dispense(sync: (suspend (T) -> Unit)): Unit = mutex.withLock {
         sync(dispensable)
     }
 }

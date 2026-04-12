@@ -15,12 +15,19 @@
 package org.angproj.io.sel.driver
 
 import kotlin.test.Test
+import kotlin.time.Duration.Companion.milliseconds
 
 class DriverTest {
     @Test
     fun testOpenSelector() {
         val selector = Driver.openSelector()
 
-        selector.isOpen()
+        var loop = 0
+        while (selector.isOpen()) {
+            selector.select(1.milliseconds)
+            loop++
+            if (loop >= 100) { selector.close() }
+        }
+
     }
 }
