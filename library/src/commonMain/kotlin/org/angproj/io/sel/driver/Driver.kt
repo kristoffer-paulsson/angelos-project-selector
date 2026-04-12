@@ -63,6 +63,7 @@ public object Driver : SelectorProvider {
             schedule(timeout) {
                 selectedKeys { keys -> selectCount = keys.size }
                 wakeup()
+                selectCount -= cleanCancelled()
             }
             return selectCount
         }
@@ -73,11 +74,21 @@ public object Driver : SelectorProvider {
 
         override fun selectNow(): Int {
             var selectCount = 0
-            task{
+            task {
                 selectedKeys { keys -> selectCount = keys.size }
                 wakeup()
+                selectCount -= cleanCancelled()
             }
             return selectCount
+        }
+
+        private suspend fun cleanCancelled(): Int {
+            var cancelledCount = 0
+            cancelledKeys { keys ->
+                cancelledCount -= keys.size
+                keys.clear()
+            }
+            return cancelledCount
         }
 
         override suspend fun wakeup(): Selector {
@@ -90,7 +101,6 @@ public object Driver : SelectorProvider {
                         true -> key.doHandle()
                         else -> cancelledKeys { cancelledKeys -> cancelledKeys.add(key) }
                     }
-                    check(key.isValid()) { "Selected key is not valid" }
                     key.doHandle()
                 }
             }
@@ -103,19 +113,19 @@ public object Driver : SelectorProvider {
 
         override suspend fun deregister(key: AbstractSelectionKey<*, *>) {
             require(!key.isValid()) { "Key must be cancelled before deregistration" }
-            cancelled.dispense { keys -> keys.remove(key) }
-            selected.dispense { keys -> keys.remove(key) }
-            allKeys.dispense { keys -> keys.remove(key) }
+            cancelledKeys { keys -> keys.remove(key) }
+            selectedKeys { keys -> keys.remove(key) }
+            keys { keys -> keys.remove(key) }
         }
 
         override suspend fun implCloseSelector() {
-            allKeys.dispense { keys ->
+            keys { keys ->
                 keys.forEach { key ->
                     key.takeIf { it.isValid() }?.cancel()
                     keys.remove(key)
                 }
             }
-            cancelled.dispense { keys ->
+            cancelledKeys() { keys ->
                 keys.clear()
             }
         }
