@@ -19,6 +19,8 @@ import kotlin.test.Test
 class DriverTest {
     @Test
     fun testOpenSelector() {
-        Driver.openSelector()
+        val selector = Driver.openSelector()
+
+        selector.isOpen()
     }
 }
