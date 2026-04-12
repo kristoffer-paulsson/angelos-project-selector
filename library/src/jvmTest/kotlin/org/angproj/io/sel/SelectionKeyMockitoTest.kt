@@ -12,11 +12,8 @@
  * Contributors:
  *      Kristoffer Paulsson - initial implementation
  */
-package org.angproj.io.sel.driver
+package org.angproj.io.sel
 
-import org.angproj.io.sel.SelectableItem
-import org.angproj.io.sel.SelectionKey
-import org.angproj.io.sel.Selector
 import org.angproj.io.sel.channel.SelectChannelOperation
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
@@ -25,10 +22,13 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-class SelectionKeyMockitoTest {
+open class SelectionKeyMockitoTest {
+
+    protected open val selectionKey: SelectionKey<String, SelectChannelOperation> = mock<SelectionKey<String, SelectChannelOperation>>()
+
     @Test
     fun testDoHandle() {
-        val selectionKey = mock<SelectionKey<String, SelectChannelOperation>>()
+        //val selectionKey = mock<SelectionKey<String, SelectChannelOperation>>()
 
         whenever(selectionKey.doHandle()).then {
             verify(selectionKey).doHandle()
@@ -37,7 +37,7 @@ class SelectionKeyMockitoTest {
 
     @Test
     fun testSelector() {
-        val selectionKey = mock<SelectionKey<String, SelectChannelOperation>>()
+        //val selectionKey = mock<SelectionKey<String, SelectChannelOperation>>()
         val selector = mock<Selector> {}
 
         whenever(selectionKey.selector()).thenReturn(selector)
@@ -47,7 +47,7 @@ class SelectionKeyMockitoTest {
 
     @Test
     fun testAttach() {
-        val selectionKey = mock<SelectionKey<String, SelectChannelOperation>>()
+        //val selectionKey = mock<SelectionKey<String, SelectChannelOperation>>()
         val attachment = "Hello, World"
 
         whenever(selectionKey.attach(attachment)).then {
@@ -61,7 +61,7 @@ class SelectionKeyMockitoTest {
 
     @Test
     fun testAttachment() {
-        val selectionKey = mock<SelectionKey<String, SelectChannelOperation>>()
+        //val selectionKey = mock<SelectionKey<String, SelectChannelOperation>>()
         val attachment = "Hello, World"
 
         whenever(selectionKey.attachment()).thenReturn(attachment)
@@ -71,7 +71,7 @@ class SelectionKeyMockitoTest {
 
     @Test
     fun testItem() {
-        val selectionKey = mock<SelectionKey<String, SelectChannelOperation>>()
+        //val selectionKey = mock<SelectionKey<String, SelectChannelOperation>>()
         val item = mock<SelectableItem> {}
 
         whenever(selectionKey.item()).thenReturn(item)
@@ -81,7 +81,7 @@ class SelectionKeyMockitoTest {
 
     @Test
     fun testInterestOps() {
-        val selectionKey = mock<SelectionKey<String, SelectChannelOperation>>()
+        //val selectionKey = mock<SelectionKey<String, SelectChannelOperation>>()
 
         whenever(selectionKey.interestOps(SelectChannelOperation.OP_READ)).thenReturn(selectionKey)
 
@@ -90,7 +90,7 @@ class SelectionKeyMockitoTest {
 
     @Test
     fun testInterestOpsEmpty() {
-        val selectionKey = mock<SelectionKey<String, SelectChannelOperation>>()
+        //val selectionKey = mock<SelectionKey<String, SelectChannelOperation>>()
 
         whenever(selectionKey.interestOps()).thenReturn(0)
 
@@ -99,7 +99,7 @@ class SelectionKeyMockitoTest {
 
     @Test
     fun testIsHandleable() {
-        val selectionKey = mock<SelectionKey<String, SelectChannelOperation>>()
+        //val selectionKey = mock<SelectionKey<String, SelectChannelOperation>>()
 
         whenever(selectionKey.isHandleable(SelectChannelOperation.OP_READ)).thenReturn(true)
 
@@ -108,7 +108,7 @@ class SelectionKeyMockitoTest {
 
     @Test
     fun testIsValid() {
-        val selectionKey = mock<SelectionKey<String, SelectChannelOperation>>()
+        //val selectionKey = mock<SelectionKey<String, SelectChannelOperation>>()
 
         whenever(selectionKey.isValid()).thenReturn(true)
 
@@ -117,7 +117,7 @@ class SelectionKeyMockitoTest {
 
     @Test
     fun testCancel() {
-        val selectionKey = mock<SelectionKey<String, SelectChannelOperation>>()
+        //val selectionKey = mock<SelectionKey<String, SelectChannelOperation>>()
 
         whenever(selectionKey.cancel()).then {
                 verify(selectionKey).cancel()

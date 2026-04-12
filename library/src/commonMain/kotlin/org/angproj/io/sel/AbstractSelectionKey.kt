@@ -72,6 +72,13 @@ public abstract class AbstractSelectionKey<A, E : SelectOperation<*>>(
         _readyOps = ops
     }
 
+    public fun postReadyOps(vararg ops: E) {
+        ops.sumOf {
+            check(it.toInt() and _interestOps != 0) { "Not in interest ops for selection" }
+            it.toInt()
+        }.also { setReadyOps(it) }
+    }
+
     override fun isHandleable(op: E): Boolean = (readyOps() and op.toInt()) != 0
 
     override fun isValid(): Boolean = _valid

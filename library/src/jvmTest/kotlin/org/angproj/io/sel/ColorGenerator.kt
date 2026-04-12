@@ -100,18 +100,10 @@ class ColorGeneratorTest {
             val c = cg.colorCount(p)
             cg.lightnessLevel(p, c) { f, ll ->
                 val h = cg.hue(c, f)
-                //println("c: ${cnt+1}, p: ${p+1}, h: $h, s: 1.0, l: $ll")
                 println("'${cg.hslToRgb(h, 1.0f, ll).toHexString()}',")
                 cnt++
             }
         }
-        /*cg.lightnessLoop { p, l ->
-            cg.hueSliceLoop(cg.colorCount(p)) { h ->
-                //println("c: ${c+1}, p: ${p+1}, h: $h, s: 1.0, l: $l")
-                println("$c: " + cg.hslToRgb(h, 1.0f, l).toHexString())
-                c++
-            }
-        }*/
     }
 
     @Test
