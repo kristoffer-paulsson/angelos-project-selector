@@ -21,7 +21,7 @@ public interface Selector {
 
     public fun isOpen(): Boolean
 
-    public fun keys(): Set<SelectionKey<*, *>>
+    public suspend fun keys(block: (HashSet<SelectionKey<*,*>>) -> Unit)
 
     public fun provider(): SelectorProvider
 
@@ -29,7 +29,7 @@ public interface Selector {
 
     public fun select(timeout: Duration): Int
 
-    public fun selectedKeys(): Set<SelectionKey<*, *>>
+    public suspend fun selectedKeys(block: (HashSet<SelectionKey<*,*>>) -> Unit)
 
     public fun selectNow(): Int
 

@@ -23,7 +23,7 @@ public abstract class AbstractSelector : Selector {
 
     abstract override fun isOpen(): Boolean
 
-    abstract override fun keys(): Set<SelectionKey<*, *>>
+    abstract override suspend fun keys(block: (HashSet<SelectionKey<*,*>>) -> Unit)
 
     abstract override fun provider(): SelectorProvider
 
@@ -31,7 +31,7 @@ public abstract class AbstractSelector : Selector {
 
     abstract override fun select(timeout: Duration): Int
 
-    abstract override fun selectedKeys(): Set<SelectionKey<*, *>>
+    abstract override suspend fun selectedKeys(block: (HashSet<SelectionKey<*,*>>) -> Unit)
 
     abstract override fun selectNow(): Int
 
@@ -39,7 +39,7 @@ public abstract class AbstractSelector : Selector {
 
     //protected void	begin()
 
-    protected abstract fun cancelledKeys(): Set<SelectionKey<*, *>>
+    protected abstract suspend fun cancelledKeys(block: (HashSet<SelectionKey<*,*>>) -> Unit)
 
     internal abstract suspend fun deregister(key: AbstractSelectionKey<*, *>)
 

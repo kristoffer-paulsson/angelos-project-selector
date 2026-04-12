@@ -25,6 +25,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.yield
+import kotlin.time.Duration
 import kotlin.time.DurationUnit
 import kotlin.time.TimeSource
 import kotlin.time.toDuration
@@ -69,3 +70,10 @@ public fun loop(block: suspend CoroutineScope.() -> Unit): Job = CoroutineScope(
         yield()
     } while (isActive)
 }.apply { start() }.job
+
+public fun schedule(
+    inTime: Duration, action: suspend CoroutineScope.() -> Unit
+): Job = CoroutineScope(Dispatchers.Default).launch {
+    delay(inTime)
+    if(isActive) action()
+}.apply { start() }

@@ -50,34 +50,38 @@ public object Driver : SelectorProvider {
 
         override fun isOpen(): Boolean = !_closed
 
-        override fun keys(): Set<SelectionKey<*, *>> {
-            TODO("Not yet implemented")
+        override suspend fun keys(block: (HashSet<SelectionKey<*,*>>) -> Unit) {
+            allKeys.dispense(block)
         }
 
         override fun provider(): SelectorProvider = this@Driver
 
-        override fun select(): Int {
-            TODO("Not yet implemented")
-        }
+        override fun select(): Int = select(Duration.ZERO)
 
         override fun select(timeout: Duration): Int {
-            TODO("Not yet implemented")
+            TODO()
+            /*schedule(timeout) {
+                wakeup()
+            }*/
         }
 
-        override fun selectedKeys(): Set<SelectionKey<*, *>> {
-            TODO("Not yet implemented")
+        override suspend fun selectedKeys(block: (HashSet<SelectionKey<*,*>>) -> Unit) {
+            selected.dispense(block)
         }
 
         override fun selectNow(): Int {
-            TODO("Not yet implemented")
+            TODO()
         }
 
         override suspend fun wakeup(): Selector {
-            TODO("Not yet implemented")
+            selectedKeys {
+
+            }
+             return this
         }
 
-        override fun cancelledKeys(): Set<SelectionKey<*, *>> {
-            TODO("Not yet implemented")
+        override suspend fun cancelledKeys(block: (HashSet<SelectionKey<*,*>>) -> Unit) {
+            cancelled.dispense(block)
         }
 
         override suspend fun deregister(key: AbstractSelectionKey<*, *>) {

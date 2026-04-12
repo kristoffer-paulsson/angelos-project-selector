@@ -43,10 +43,12 @@ open class SelectorMockitoTest {
     }
 
     @Test
-    fun testKeys() {
-        whenever(selector.keys()).thenReturn(setOf())
+    fun testKeys(): Unit = runBlocking {
+        val noop: (HashSet<SelectionKey<*,*>>) -> Unit = {}
 
-        assertTrue { selector.keys().isEmpty() }
+        whenever(selector.keys(noop)).then {
+            suspend { verify(selector).keys(noop) }
+        }
     }
 
     @Test
@@ -73,10 +75,12 @@ open class SelectorMockitoTest {
     }
 
     @Test
-    fun testSelectedKeys() {
-        whenever(selector.selectedKeys()).thenReturn(setOf())
+    fun testSelectedKeys(): Unit = runBlocking {
+        val noop: (HashSet<SelectionKey<*,*>>) -> Unit = {}
 
-        assertTrue { selector.selectedKeys().isEmpty() }
+        whenever(selector.selectedKeys(noop)).then {
+            suspend { verify(selector).selectedKeys(noop) }
+        }
     }
 
     @Test
