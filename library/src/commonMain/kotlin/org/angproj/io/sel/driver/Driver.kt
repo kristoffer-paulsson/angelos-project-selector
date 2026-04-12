@@ -50,7 +50,7 @@ public object Driver : SelectorProvider {
 
         override fun isOpen(): Boolean = !_closed
 
-        override suspend fun keys(block: (HashSet<SelectionKey<*,*>>) -> Unit) {
+        override suspend fun keys(block: suspend (HashSet<SelectionKey<*,*>>) -> Unit) {
             allKeys.dispense(block)
         }
 
@@ -59,28 +59,45 @@ public object Driver : SelectorProvider {
         override fun select(): Int = select(Duration.ZERO)
 
         override fun select(timeout: Duration): Int {
-            TODO()
-            /*schedule(timeout) {
+            var selectCount = 0
+            schedule(timeout) {
+                selectedKeys { keys -> selectCount = keys.size }
                 wakeup()
-            }*/
+            }
+            return selectCount
         }
 
-        override suspend fun selectedKeys(block: (HashSet<SelectionKey<*,*>>) -> Unit) {
+        override suspend fun selectedKeys(block: suspend (HashSet<SelectionKey<*,*>>) -> Unit) {
             selected.dispense(block)
         }
 
         override fun selectNow(): Int {
-            TODO()
+            var selectCount = 0
+            task{
+                selectedKeys { keys -> selectCount = keys.size }
+                wakeup()
+            }
+            return selectCount
         }
 
         override suspend fun wakeup(): Selector {
-            selectedKeys {
-
+            selectedKeys { selKeys ->
+                val keyIter = selKeys.iterator()
+                while (keyIter.hasNext()) {
+                    val key = keyIter.next()
+                    selKeys.remove(key)
+                    when(key.isValid()) {
+                        true -> key.doHandle()
+                        else -> cancelledKeys { cancelledKeys -> cancelledKeys.add(key) }
+                    }
+                    check(key.isValid()) { "Selected key is not valid" }
+                    key.doHandle()
+                }
             }
-             return this
+            return this
         }
 
-        override suspend fun cancelledKeys(block: (HashSet<SelectionKey<*,*>>) -> Unit) {
+        override suspend fun cancelledKeys(block: suspend (HashSet<SelectionKey<*,*>>) -> Unit) {
             cancelled.dispense(block)
         }
 
