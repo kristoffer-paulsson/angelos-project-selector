@@ -25,8 +25,6 @@ public interface Selector {
 
     public fun provider(): SelectorProvider
 
-    public fun select(): Int
-
     public fun select(timeout: Duration): Int
 
     public suspend fun selectedKeys(block: suspend (HashSet<SelectionKey<*,*>>) -> Unit)

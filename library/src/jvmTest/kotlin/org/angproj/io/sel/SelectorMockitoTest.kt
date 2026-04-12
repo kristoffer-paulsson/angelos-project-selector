@@ -61,13 +61,6 @@ open class SelectorMockitoTest {
     }
 
     @Test
-    fun testSelect() {
-        whenever(selector.select()).thenReturn(0)
-
-        assertEquals(0, selector.select())
-    }
-
-    @Test
     fun testSelectDuration() {
         whenever(selector.select(2.microseconds)).thenReturn(0)
 

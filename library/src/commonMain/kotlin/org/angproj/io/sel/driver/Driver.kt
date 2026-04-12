@@ -56,14 +56,10 @@ public object Driver : SelectorProvider {
 
         override fun provider(): SelectorProvider = this@Driver
 
-        override fun select(): Int = select(Duration.ZERO)
-
         override fun select(timeout: Duration): Int {
             var selectCount = 0
             schedule(timeout) {
-                selectedKeys { keys -> selectCount = keys.size }
-                wakeup()
-                selectCount -= cleanCancelled()
+                selectCount = doWakeUp()
             }
             return selectCount
         }
@@ -74,11 +70,15 @@ public object Driver : SelectorProvider {
 
         override fun selectNow(): Int {
             var selectCount = 0
-            task {
-                selectedKeys { keys -> selectCount = keys.size }
-                wakeup()
-                selectCount -= cleanCancelled()
-            }
+            task { selectCount = doWakeUp() }
+            return selectCount
+        }
+
+        private suspend fun doWakeUp(): Int {
+            var selectCount = 0
+            selectedKeys { keys -> selectCount = keys.size }
+            wakeup()
+            selectCount -= cleanCancelled()
             return selectCount
         }
 

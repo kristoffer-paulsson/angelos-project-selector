@@ -27,8 +27,6 @@ public abstract class AbstractSelector : Selector {
 
     abstract override fun provider(): SelectorProvider
 
-    abstract override fun select(): Int
-
     abstract override fun select(timeout: Duration): Int
 
     abstract override suspend fun selectedKeys(block: suspend (HashSet<SelectionKey<*,*>>) -> Unit)
