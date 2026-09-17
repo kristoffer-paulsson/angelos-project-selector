@@ -45,10 +45,10 @@ public abstract class AbstractSelector : Selector {
 
     protected abstract suspend fun implCloseSelector()
 
-    protected abstract suspend fun<A, E : SelectOperation<*>> register(
-        item: AbstractSelectableItem,
+    public abstract suspend fun <I: AbstractSelectableItem, E : SelectOperation<*>, A> register(
+        item: I,
         vararg ops: E,
         attachment: A,
-        build: AbstractSelector.(AbstractSelectableItem) -> SelectionKey<A, E>
-    ): SelectionKey<A, *>
+        build: AbstractSelector.(I) -> AbstractSelectionKey<A, E>
+    ): AbstractSelectionKey<A, *>
 }

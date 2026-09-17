@@ -25,15 +25,15 @@ import kotlin.time.Duration
 
 public object Driver : SelectorProvider {
 
-    private val innerSelector: Selector by lazy {
+    private val innerSelector: AbstractSelector by lazy {
         buildSelector()
     }
 
-    public fun openSelector(): Selector {
+    public fun openSelector(): AbstractSelector {
         return innerSelector
     }
 
-    private fun buildSelector(): Selector = object : AbstractSelector() {
+    private fun buildSelector(): AbstractSelector = object : AbstractSelector() {
 
         private var _closed = false
 
@@ -75,6 +75,7 @@ public object Driver : SelectorProvider {
         }
 
         private suspend fun doWakeUp(): Int {
+            println(readySelector())
             var selectCount = 0
             selectedKeys { keys -> selectCount = keys.size }
             wakeup()
@@ -101,7 +102,6 @@ public object Driver : SelectorProvider {
                         true -> key.doHandle()
                         else -> cancelledKeys { cancelledKeys -> cancelledKeys.add(key) }
                     }
-                    key.doHandle()
                 }
             }
             return this
@@ -130,12 +130,25 @@ public object Driver : SelectorProvider {
             }
         }
 
-        override suspend fun <A, E : SelectOperation<*>> register(
-            item: AbstractSelectableItem,
+        private suspend fun readySelector(): Int {
+            var readyCount = 0
+            keys { keys ->
+                keys.forEach { key ->
+                    if(key.readyOps() != 0) {
+                        selectedKeys { keys -> keys.add(key) }
+                        readyCount++
+                    }
+                }
+            }
+            return readyCount
+        }
+
+        override suspend fun <I: AbstractSelectableItem, E : SelectOperation<*>, A> register(
+            item: I,
             vararg ops: E,
             attachment: A,
-            build: AbstractSelector.(AbstractSelectableItem) -> SelectionKey<A, E>
-        ): SelectionKey<A, E> {
+            build: AbstractSelector.(I) -> AbstractSelectionKey<A, E>
+        ): AbstractSelectionKey<A, *> {
             check(isOpen()) { "Selector is closed" }
 
             val selectionKey = build(item)

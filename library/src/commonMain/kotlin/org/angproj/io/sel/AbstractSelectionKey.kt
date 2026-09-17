@@ -38,7 +38,7 @@ public abstract class AbstractSelectionKey<A, E : SelectOperation<*>>(
         task { handler() }
     }
 
-    override fun selector(): Selector = selector
+    override fun selector(): AbstractSelector = selector
 
     override fun item(): SelectableItem = item
 
@@ -74,7 +74,7 @@ public abstract class AbstractSelectionKey<A, E : SelectOperation<*>>(
 
     public fun postReadyOps(vararg ops: E) {
         ops.sumOf {
-            check(it.toInt() and _interestOps != 0) { "Not in interest ops for selection" }
+            check(it.toInt() != 0 && _interestOps != 0) { "Not in interest ops for selection" }
             it.toInt()
         }.also { setReadyOps(it) }
     }
