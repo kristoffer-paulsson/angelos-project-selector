@@ -43,10 +43,16 @@ public abstract class AbstractSelectionKey<A, E : SelectOperation<*>>(
     override fun item(): SelectableItem = item
 
     override fun attach(obj: A) {
+        check(attachment == null) { "Attachment already set" }
         attachment = obj
     }
 
     override fun attachment(): A = attachment ?: throw IllegalStateException("No attachment for selection key")
+
+    public fun resetOps() {
+        _interestOps = 0
+        _readyOps = 0
+    }
 
     override fun interestOps(): Int {
         ensureValid()
@@ -55,8 +61,8 @@ public abstract class AbstractSelectionKey<A, E : SelectOperation<*>>(
 
     override fun interestOps(vararg ops: E): AbstractSelectionKey<A, E> {
         ensureValid()
-        require(ops.isNotEmpty()) { "Invalid interest ops for channel" }
-        _interestOps = ops.sumOf { it.toInt() }
+        require(ops.isNotEmpty()) { "Not interested in any operations" }
+        _interestOps = ops.toSet().sumOf { it.toInt() } or _interestOps
         return this
     }
 
@@ -65,21 +71,18 @@ public abstract class AbstractSelectionKey<A, E : SelectOperation<*>>(
         return _readyOps
     }
 
-    /**
-     * Sets the ready operations. Should be called by the selector implementation.
-     */
-    protected fun setReadyOps(ops: Int) {
-        _readyOps = ops
+    override fun readyOps(op: E): AbstractSelectionKey<A, E> {
+        ensureValid()
+        check(canMakeReady(op)) { "Can't make ready" }
+        _readyOps = op.toInt() or _readyOps
+        return this
     }
 
-    public fun postReadyOps(vararg ops: E) {
-        ops.sumOf {
-            check(it.toInt() != 0 && _interestOps != 0) { "Not in interest ops for selection" }
-            it.toInt()
-        }.also { setReadyOps(it) }
-    }
+    override fun isHandleable(op: E): Boolean = (_readyOps and op.toInt()) != 0
 
-    override fun isHandleable(op: E): Boolean = (readyOps() and op.toInt()) != 0
+    override fun isInterested(op: E): Boolean = (_interestOps and op.toInt()) != 0
+
+    override fun canMakeReady(op: E): Boolean = isInterested(op) && !isHandleable(op)
 
     override fun isValid(): Boolean = _valid
 

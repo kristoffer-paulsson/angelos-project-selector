@@ -67,7 +67,7 @@ public interface SelectionKey<A, E: SelectOperation<*>> {
     /**
      * Sets this key's interest set.
      *
-     * @param ops the new interest set
+     * @param ops the new interest operations
      * @return this selection key
      */
     public fun interestOps(vararg ops: E): SelectionKey<A, E>
@@ -80,9 +80,27 @@ public interface SelectionKey<A, E: SelectOperation<*>> {
     public fun readyOps(): Int
 
     /**
+     * Sets this key's ready set.
      *
-     */
+     * @param op the new ready operation
+     * @return this selection key
+     * */
+    public fun readyOps(op: E): AbstractSelectionKey<A, E>
+
+    /**
+     *
+     * */
     public fun isHandleable(op: E): Boolean
+
+    /**
+     *
+     * */
+    public fun isInterested(op: E): Boolean
+
+    /**
+     *
+     * */
+    public fun canMakeReady(op: E): Boolean
 
     /**
      * Tells whether this key is valid.

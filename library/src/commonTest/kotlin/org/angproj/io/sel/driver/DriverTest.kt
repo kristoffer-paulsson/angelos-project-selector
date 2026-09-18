@@ -31,11 +31,15 @@ class DriverTest {
         task {
             val key = selector.register(sn, SelectNotifyOperation.OP_NOTIFY, attachment = selectable) {
                 NotifySelectionKey(this, it) {
-                    println("Hello, world!")
+                    when {
+                        isHandleable(SelectNotifyOperation.OP_NOTIFY)-> println("Hello, world!")
+                        isHandleable(SelectNotifyOperation.OP_CLOSE) -> println("Closed!")
+                        else -> cancel()
+                    }
                 }
             } as NotifySelectionKey
             key.interestOps(SelectNotifyOperation.OP_NOTIFY)
-            key.postReadyOps(SelectNotifyOperation.OP_NOTIFY)
+            key.readyOps(SelectNotifyOperation.OP_NOTIFY)
             selector.selectNow()
             selector.close()
         }
