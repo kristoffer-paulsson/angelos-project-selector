@@ -14,51 +14,59 @@
  */
 package org.angproj.io.sel.driver
 
+import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.cancelChildren
+import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.yield
 import org.angproj.io.sel.notify.NotifySelectionKey
+import org.angproj.io.sel.notify.NotifySelectionKeyTest.Attachment
 import org.angproj.io.sel.notify.SelectNotifyOperation
 import org.angproj.io.sel.notify.SelectableNotify
 import kotlin.test.Test
+import kotlin.test.assertFailsWith
+import kotlin.test.assertTrue
+import kotlin.test.assertFalse
+import kotlin.test.assertEquals
+import kotlin.time.Duration.Companion.milliseconds
 
 class DriverTest {
     @Test
-    fun testOpenSelector() {
-        val selector = Driver.openSelector()
+    fun testOpenSelector() = runTest {
         var loop = 0
+        val selectable = SelectableNotify()
+        val selector = Driver.openSelector()
 
-        val selectable = object {}
+        val key = selector.register(selectable, SelectNotifyOperation.OP_NOTIFY, attachment = object {}) {
+            NotifySelectionKey(this, it) {
+                when {
+                    isHandleable(SelectNotifyOperation.OP_NOTIFY) -> {
+                        println("Hello, world! $loop")
 
-        val sn = SelectableNotify()
-        task {
-            val key = selector.register(sn, SelectNotifyOperation.OP_NOTIFY, attachment = selectable) {
-                NotifySelectionKey(this, it) {
-                    when {
-                        isHandleable(SelectNotifyOperation.OP_NOTIFY)-> println("Hello, world!")
-                        isHandleable(SelectNotifyOperation.OP_CLOSE) -> println("Closed!")
-                        else -> cancel()
                     }
+                    isHandleable(SelectNotifyOperation.OP_CLOSE) -> {
+                        println("Time to stop! $loop")
+                    }
+                    else -> error("Unhandled $loop")
                 }
-            } as NotifySelectionKey
-            key.interestOps(SelectNotifyOperation.OP_NOTIFY)
-            key.readyOps(SelectNotifyOperation.OP_NOTIFY)
-            selector.selectNow()
-            selector.close()
-        }
+                resetOps()
+                interestOps(SelectNotifyOperation.OP_NOTIFY)
+            }
+        } as NotifySelectionKey
 
-        /*while (selector.isOpen()) {
-            key.interestOps(SelectNotifyOperation.OP_NOTIFY)
-            key.postReadyOps(SelectNotifyOperation.OP_NOTIFY)
-            //println(key.isNotifiable())
+        loop {
+            if(key.canMakeReady(SelectNotifyOperation.OP_NOTIFY)) {
+                key.readyOps(SelectNotifyOperation.OP_NOTIFY)
+            }
 
-            /*suspend {
-                selector.selectedKeys {
-                    println(key in it)
-                }
-            }*/
             selector.selectNow()
-            //println(key.isNotifiable())
             loop++
-            if (loop >= 100) { selector.close() }
-        }*/
+            yield()
 
+            if(loop > 100){
+                selector.close()
+                coroutineContext.cancelChildren()
+            }
+        }.join()
     }
 }
