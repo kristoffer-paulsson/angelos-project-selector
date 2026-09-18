@@ -1,6 +1,7 @@
 package org.angproj.io.sel.notify
 
 import kotlinx.coroutines.test.runTest
+import org.angproj.io.sel.CancelledKeyException
 import org.angproj.io.sel.Closeable
 import org.angproj.io.sel.driver.Driver
 import org.angproj.io.sel.driver.task
@@ -42,7 +43,7 @@ class NotifySelectionKeyTest {
     }
 
     @Test
-    fun testInterestOps() = runTest {
+    fun testOps() = runTest {
         task {
             val attachment = Attachment()
             val selectable = SelectableNotify()
@@ -90,6 +91,40 @@ class NotifySelectionKeyTest {
             key.readyOps(SelectNotifyOperation.OP_CLOSE)
             assertTrue { // Assert close is ready
                 key.isHandleable(SelectNotifyOperation.OP_CLOSE) }
+        }.join()
+    }
+
+    @Test
+    fun testValid() = runTest {
+        task {
+            val attachment = Attachment()
+            val selectable = SelectableNotify()
+            val selector = Driver.openSelector()
+
+            val key = selector.register(selectable, SelectNotifyOperation.OP_NOTIFY, attachment = attachment) {
+                NotifySelectionKey(this, it) {
+                }
+            } as NotifySelectionKey
+
+            key.interestOps(SelectNotifyOperation.OP_NOTIFY)
+            assertTrue { key.interestOps() == SelectNotifyOperation.OP_NOTIFY.toInt() }
+            key.readyOps(SelectNotifyOperation.OP_NOTIFY)
+            assertTrue { key.readyOps() == SelectNotifyOperation.OP_NOTIFY.toInt() }
+
+            key.cancel()
+
+            assertFailsWith<CancelledKeyException> {
+                key.interestOps(SelectNotifyOperation.OP_NOTIFY)
+            }
+            assertFailsWith<CancelledKeyException> {
+                key.interestOps()
+            }
+            assertFailsWith<CancelledKeyException> {
+                key.readyOps(SelectNotifyOperation.OP_NOTIFY)
+            }
+            assertFailsWith<CancelledKeyException> {
+                key.readyOps()
+            }
         }.join()
     }
 }
