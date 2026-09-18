@@ -75,7 +75,7 @@ public object Driver : SelectorProvider {
         }
 
         private suspend fun doWakeUp(): Int {
-            println(readySelector())
+            readySelector()
             var selectCount = 0
             selectedKeys { keys -> selectCount = keys.size }
             wakeup()
