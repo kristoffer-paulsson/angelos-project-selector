@@ -108,6 +108,13 @@ public interface SelectionKey<A, E: SelectOperation<*>> {
     public fun canMakeReady(op: E): Boolean
 
     /**
+     * Tells whether this key is idle.
+     *
+     * @return true if valid
+     */
+    public fun isIdle(): Boolean
+
+    /**
      * Tells whether this key is valid.
      *
      * @return true if valid

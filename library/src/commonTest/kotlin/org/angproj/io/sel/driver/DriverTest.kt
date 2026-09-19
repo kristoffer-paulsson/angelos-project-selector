@@ -16,6 +16,7 @@ package org.angproj.io.sel.driver
 
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.yield
 import org.angproj.io.sel.notify.NotifySelectionKey
 import org.angproj.io.sel.notify.SelectNotifyOperation
 import org.angproj.io.sel.notify.SelectableNotify
@@ -31,15 +32,15 @@ class DriverTest {
 
         val key = selector.register(selectable, SelectNotifyOperation.OP_NOTIFY, attachment = object {}) {
             NotifySelectionKey(this, it) {
-                when {
+                when{
                     isHandleable(SelectNotifyOperation.OP_NOTIFY) -> {
                         loop++
                         println("Hello, world! $loop")
                         clearOps(SelectNotifyOperation.OP_NOTIFY)
-                        if(loop > 99)
-                            interestOps(SelectNotifyOperation.OP_CLOSE)
-                        else {
-                            interestOps(SelectNotifyOperation.OP_NOTIFY)
+                       when {
+                            loop < 100 -> interestOps(SelectNotifyOperation.OP_NOTIFY)
+                            isValid() -> interestOps(SelectNotifyOperation.OP_CLOSE)
+                            else -> Unit
                         }
                     }
                     isHandleable(SelectNotifyOperation.OP_CLOSE) -> {
@@ -47,7 +48,7 @@ class DriverTest {
                         cancel()
                         selector.close()
                     }
-                    else -> error("Unhandled $loop")
+                    else -> error("Unhandled $loop " + readyOps())
                 }
             }
         } as NotifySelectionKey
@@ -61,7 +62,9 @@ class DriverTest {
             }?.readyOps(SelectNotifyOperation.OP_CLOSE)
 
             selector.selectNow()
-            takeUnless { selector.isOpen() }?.let { cancel() }
+            takeUnless { selector.isOpen() }?.let {
+                cancel()
+            }
         }.join()
     }
 }

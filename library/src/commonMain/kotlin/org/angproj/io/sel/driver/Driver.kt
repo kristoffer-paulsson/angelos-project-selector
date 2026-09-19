@@ -134,7 +134,7 @@ public object Driver : SelectorProvider {
             var readyCount = 0
             keys { keys ->
                 keys.forEach { key ->
-                    if(key.readyOps() != 0) {
+                    if(key.readyOps() != 0 && key.isIdle()) {
                         selectedKeys { keys -> keys.add(key) }
                         readyCount++
                     }

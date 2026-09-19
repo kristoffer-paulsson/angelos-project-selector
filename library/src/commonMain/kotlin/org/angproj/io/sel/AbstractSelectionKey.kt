@@ -16,7 +16,6 @@ package org.angproj.io.sel
 
 import org.angproj.io.sel.driver.task
 
-
 /**
  * A fully functional abstract base for selection keys, using [SelectOperation] for operation sets.
  */
@@ -32,10 +31,19 @@ public abstract class AbstractSelectionKey<A, E : SelectOperation<*>>(
 
     private var _readyOps: Int = 0
 
-    private var _valid: Boolean = true
+    private enum class State{
+        IDLING, WAITING, ABORTING
+    }
+
+    private var _state: State = State.IDLING
 
     override fun doHandle() {
-        task { handler() }
+        if(!isIdle()) throw CancelledKeyException()
+        _state = State.WAITING
+        task {
+            handler()
+            if(isValid()) _state = State.IDLING
+        }
     }
 
     override fun selector(): AbstractSelector = selector
@@ -56,24 +64,22 @@ public abstract class AbstractSelectionKey<A, E : SelectOperation<*>>(
     }
 
     override fun interestOps(): Int {
-        ensureValid()
         return _interestOps
     }
 
     override fun interestOps(vararg ops: E): AbstractSelectionKey<A, E> {
-        ensureValid()
+        if(!isValid()) throw CancelledKeyException()
         require(ops.isNotEmpty()) { "Not interested in any operations" }
         _interestOps = ops.toSet().sumOf { it.toInt() } or _interestOps
         return this
     }
 
     override fun readyOps(): Int {
-        ensureValid()
         return _readyOps
     }
 
     override fun readyOps(op: E): AbstractSelectionKey<A, E> {
-        ensureValid()
+        if(!isValid()) throw CancelledKeyException()
         check(canMakeReady(op)) { "Can't make ready" }
         _readyOps = op.toInt() or _readyOps
         return this
@@ -83,18 +89,16 @@ public abstract class AbstractSelectionKey<A, E : SelectOperation<*>>(
 
     override fun isInterested(op: E): Boolean = (_interestOps and op.toInt()) != 0
 
-    override fun canMakeReady(op: E): Boolean = isInterested(op) && !isHandleable(op)
+    override fun canMakeReady(op: E): Boolean = isInterested(op) && !isHandleable(op) && isIdle()
 
-    override fun isValid(): Boolean = _valid
+    override fun isIdle(): Boolean = _state == State.IDLING
+
+    override fun isValid(): Boolean = _state != State.ABORTING
 
     override fun cancel() {
-        if (_valid) {
-            _valid = false
+        if (isValid()) {
+            _state = State.ABORTING
             task { selector.deregister(this@AbstractSelectionKey) }
         }
-    }
-
-    private fun ensureValid() {
-        if (!_valid) throw CancelledKeyException()
     }
 }
