@@ -14,21 +14,13 @@
  */
 package org.angproj.io.sel.driver
 
-import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.test.runTest
-import kotlinx.coroutines.yield
 import org.angproj.io.sel.notify.NotifySelectionKey
-import org.angproj.io.sel.notify.NotifySelectionKeyTest.Attachment
 import org.angproj.io.sel.notify.SelectNotifyOperation
 import org.angproj.io.sel.notify.SelectableNotify
 import kotlin.test.Test
-import kotlin.test.assertFailsWith
-import kotlin.test.assertTrue
-import kotlin.test.assertFalse
-import kotlin.test.assertEquals
-import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.DurationUnit
 
 class DriverTest {
     @Test
@@ -41,32 +33,35 @@ class DriverTest {
             NotifySelectionKey(this, it) {
                 when {
                     isHandleable(SelectNotifyOperation.OP_NOTIFY) -> {
+                        loop++
                         println("Hello, world! $loop")
-
+                        clearOps(SelectNotifyOperation.OP_NOTIFY)
+                        if(loop > 99)
+                            interestOps(SelectNotifyOperation.OP_CLOSE)
+                        else {
+                            interestOps(SelectNotifyOperation.OP_NOTIFY)
+                        }
                     }
                     isHandleable(SelectNotifyOperation.OP_CLOSE) -> {
-                        println("Time to stop! $loop")
+                        clearOps(SelectNotifyOperation.OP_CLOSE)
+                        cancel()
+                        selector.close()
                     }
                     else -> error("Unhandled $loop")
                 }
-                resetOps()
-                interestOps(SelectNotifyOperation.OP_NOTIFY)
             }
         } as NotifySelectionKey
 
-        loop {
-            if(key.canMakeReady(SelectNotifyOperation.OP_NOTIFY)) {
-                key.readyOps(SelectNotifyOperation.OP_NOTIFY)
-            }
+        clock(DurationUnit.SECONDS, 100) {
+            key.takeIf {
+                it.canMakeReady(SelectNotifyOperation.OP_NOTIFY)
+            }?.readyOps(SelectNotifyOperation.OP_NOTIFY)
+            key.takeIf {
+                it.canMakeReady(SelectNotifyOperation.OP_CLOSE)
+            }?.readyOps(SelectNotifyOperation.OP_CLOSE)
 
             selector.selectNow()
-            loop++
-            yield()
-
-            if(loop > 100){
-                selector.close()
-                coroutineContext.cancelChildren()
-            }
+            takeUnless { selector.isOpen() }?.let { cancel() }
         }.join()
     }
 }

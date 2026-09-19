@@ -58,6 +58,11 @@ public interface SelectionKey<A, E: SelectOperation<*>> {
     public fun item(): SelectableItem
 
     /**
+     *
+     */
+    public fun clearOps(vararg ops: E)
+
+    /**
      * Retrieves this key's interest set.
      *
      * @return the interest set

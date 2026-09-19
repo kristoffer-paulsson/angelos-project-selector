@@ -49,9 +49,10 @@ public abstract class AbstractSelectionKey<A, E : SelectOperation<*>>(
 
     override fun attachment(): A = attachment ?: throw IllegalStateException("No attachment for selection key")
 
-    public fun resetOps() {
-        _interestOps = 0
-        _readyOps = 0
+    override fun clearOps(vararg ops: E) {
+        val mask = (ops.toSet().sumOf { it.toInt() }).inv()
+        _interestOps = _interestOps and mask
+        _readyOps = _readyOps and mask
     }
 
     override fun interestOps(): Int {

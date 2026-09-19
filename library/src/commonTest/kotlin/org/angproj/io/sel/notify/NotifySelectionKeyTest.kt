@@ -53,9 +53,10 @@ class NotifySelectionKeyTest {
 
         // Assert both ops as set
         assertEquals(key.interestOps(), SelectNotifyOperation.entries.sumOf { it.toInt() })
-        key.resetOps() // reset ops in interest and ready
+        key.clearOps(*SelectNotifyOperation.entries.toTypedArray()) // reset ops in interest and ready
         // Assert interest not set
         assertEquals(0, key.interestOps())
+        assertEquals(0, key.readyOps())
 
         assertFailsWith<IllegalStateException> {
             // assert exception when ready and not interested op
