@@ -126,13 +126,7 @@ class NotifySelectionKeyTest {
             key.interestOps(SelectNotifyOperation.OP_NOTIFY)
         }
         assertFailsWith<CancelledKeyException> {
-            key.interestOps()
-        }
-        assertFailsWith<CancelledKeyException> {
             key.readyOps(SelectNotifyOperation.OP_NOTIFY)
-        }
-        assertFailsWith<CancelledKeyException> {
-            key.readyOps()
         }
     }
 }

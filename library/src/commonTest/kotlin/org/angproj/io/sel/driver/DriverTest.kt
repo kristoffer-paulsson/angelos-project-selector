@@ -16,7 +16,6 @@ package org.angproj.io.sel.driver
 
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.test.runTest
-import kotlinx.coroutines.yield
 import org.angproj.io.sel.notify.NotifySelectionKey
 import org.angproj.io.sel.notify.SelectNotifyOperation
 import org.angproj.io.sel.notify.SelectableNotify
