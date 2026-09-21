@@ -21,6 +21,7 @@ import org.angproj.io.sel.notify.SelectNotifyOperation
 import org.angproj.io.sel.notify.SelectableNotify
 import kotlin.test.Test
 import kotlin.time.DurationUnit
+import kotlin.time.TimeSource
 
 class DriverTest {
     @Test
@@ -28,13 +29,14 @@ class DriverTest {
         var loop = 0
         val selectable = SelectableNotify()
         val selector = Driver.openSelector()
+        val time = TimeSource.Monotonic.markNow()
 
         val key = selector.register(selectable, SelectNotifyOperation.OP_NOTIFY, attachment = object {}) {
             NotifySelectionKey(this, it) {
                 when{
                     isHandleable(SelectNotifyOperation.OP_NOTIFY) -> {
                         loop++
-                        println("Hello, world! $loop")
+                        println("Hello, world! $loop, " + time.elapsedNow())
                         clearOps(SelectNotifyOperation.OP_NOTIFY)
                        when {
                             loop < 100 -> interestOps(SelectNotifyOperation.OP_NOTIFY)
@@ -52,6 +54,7 @@ class DriverTest {
             }
         } as NotifySelectionKey
 
+        var ticks = 0
         clock(DurationUnit.SECONDS, 100) {
             key.takeIf {
                 it.canMakeReady(SelectNotifyOperation.OP_NOTIFY)
@@ -61,9 +64,11 @@ class DriverTest {
             }?.readyOps(SelectNotifyOperation.OP_CLOSE)
 
             selector.selectNow()
+            ticks++
             takeUnless { selector.isOpen() }?.let {
                 cancel()
             }
         }.join()
+        println("Ticks: $ticks")
     }
 }

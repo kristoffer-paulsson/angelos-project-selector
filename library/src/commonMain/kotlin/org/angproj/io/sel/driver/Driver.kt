@@ -160,4 +160,8 @@ public object Driver : SelectorProvider {
             return selectionKey
         }
     }
+
+    public fun openPipe() {
+
+    }
 }

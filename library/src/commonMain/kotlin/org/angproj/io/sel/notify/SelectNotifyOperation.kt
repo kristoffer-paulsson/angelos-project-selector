@@ -18,5 +18,5 @@ import org.angproj.io.sel.SelectOperation
 
 public enum class SelectNotifyOperation(override val operation: Int): SelectOperation<SelectNotifyOperation> {
     OP_NOTIFY(1),
-    OP_CLOSE(OP_NOTIFY.toInt() shl 1)
+    OP_CLOSE(OP_NOTIFY.operation shl 1)
 }

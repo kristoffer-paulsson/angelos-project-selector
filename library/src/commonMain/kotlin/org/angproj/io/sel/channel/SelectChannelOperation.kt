@@ -17,8 +17,8 @@ package org.angproj.io.sel.channel
 import org.angproj.io.sel.SelectOperation
 
 public enum class SelectChannelOperation(override val operation: Int): SelectOperation<SelectChannelOperation> {
-    OP_ACCEPT(16),
-    OP_CONNECT(8),
     OP_READ(1),
-    OP_WRITE(4);
+    OP_WRITE(OP_READ.operation shl 1),
+    OP_CONNECT(OP_WRITE.operation shl 1),
+    OP_ACCEPT(OP_CONNECT.operation shl 1);
 }

@@ -21,8 +21,4 @@ public class NotifySelectionKey<A>(
     selector: AbstractSelector,
     item: SelectableNotify,
     handler: suspend AbstractSelectionKey<A, SelectNotifyOperation>.() -> Unit,
-) : AbstractSelectionKey<A, SelectNotifyOperation>(selector, item, handler) {
-    public fun isNotifiable(): Boolean = isHandleable(SelectNotifyOperation.OP_NOTIFY)
-
-    public fun isClosable(): Boolean = isHandleable(SelectNotifyOperation.OP_CLOSE)
-}
+) : AbstractSelectionKey<A, SelectNotifyOperation>(selector, item, handler)

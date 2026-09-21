@@ -21,13 +21,4 @@ public class ChannelSelectionKey<A>(
     selector: AbstractSelector,
     item: SelectableChannel,
     handler: suspend AbstractSelectionKey<A, SelectChannelOperation>.() -> Unit,
-) : AbstractSelectionKey<A, SelectChannelOperation>(selector, item, handler) {
-
-    public fun isAcceptable(): Boolean = isHandleable(SelectChannelOperation.OP_ACCEPT)
-
-    public fun isConnectable(): Boolean = isHandleable(SelectChannelOperation.OP_CONNECT)
-
-    public fun isReadable(): Boolean = isHandleable(SelectChannelOperation.OP_READ)
-
-    public fun isWritable(): Boolean = isHandleable(SelectChannelOperation.OP_WRITE)
-}
+) : AbstractSelectionKey<A, SelectChannelOperation>(selector, item, handler)
