@@ -16,8 +16,8 @@ package org.angproj.io.sel.notify
 
 import kotlinx.coroutines.test.runTest
 import org.angproj.io.sel.CancelledKeyException
-import org.angproj.io.sel.Closeable
 import org.angproj.io.sel.driver.Driver
+import org.angproj.io.sel.driver.DriverTest
 import kotlin.test.Test
 import kotlin.test.assertSame
 import kotlin.test.assertFailsWith
@@ -27,15 +27,9 @@ import kotlin.test.assertEquals
 
 class NotifySelectionKeyTest {
 
-    class Attachment : Closeable {
-        override fun close() {
-            TODO("Not yet implemented")
-        }
-    }
-
     @Test
     fun testAttachment() = runTest {
-        val attachment = Attachment()
+        val attachment = DriverTest.Attachment()
         val selectable = SelectableNotify()
         val selector = Driver.openSelector()
 
@@ -49,13 +43,13 @@ class NotifySelectionKeyTest {
         assertSame(key.attachment(), attachment)
 
         assertFailsWith<IllegalStateException> {
-            key.attach(Attachment())
+            key.attach(DriverTest.Attachment())
         }
     }
 
     @Test
     fun testOps() = runTest {
-        val attachment = Attachment()
+        val attachment = DriverTest.Attachment()
         val selectable = SelectableNotify()
         val selector = Driver.openSelector()
 
@@ -106,7 +100,7 @@ class NotifySelectionKeyTest {
 
     @Test
     fun testValid() = runTest {
-        val attachment = Attachment()
+        val attachment = DriverTest.Attachment()
         val selectable = SelectableNotify()
         val selector = Driver.openSelector()
 

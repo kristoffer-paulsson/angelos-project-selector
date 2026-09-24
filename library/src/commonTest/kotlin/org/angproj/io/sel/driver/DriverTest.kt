@@ -16,6 +16,7 @@ package org.angproj.io.sel.driver
 
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.test.runTest
+import org.angproj.io.sel.Closeable
 import org.angproj.io.sel.notify.NotifySelectionKey
 import org.angproj.io.sel.notify.SelectNotifyOperation
 import org.angproj.io.sel.notify.SelectableNotify
@@ -24,6 +25,13 @@ import kotlin.time.DurationUnit
 import kotlin.time.TimeSource
 
 class DriverTest {
+
+    class Attachment: Closeable {
+        override fun close() {
+            TODO("Not yet implemented")
+        }
+    }
+
     @Test
     fun testOpenSelector() = runTest {
         var loop = 0
@@ -31,7 +39,7 @@ class DriverTest {
         val selector = Driver.openSelector()
         val time = TimeSource.Monotonic.markNow()
 
-        val key = selector.register(selectable, SelectNotifyOperation.OP_NOTIFY, attachment = object {}) {
+        val key = selector.register(selectable, SelectNotifyOperation.OP_NOTIFY, attachment = Attachment()) {
             NotifySelectionKey(this, it) {
                 when{
                     isHandleable(SelectNotifyOperation.OP_NOTIFY) -> {
