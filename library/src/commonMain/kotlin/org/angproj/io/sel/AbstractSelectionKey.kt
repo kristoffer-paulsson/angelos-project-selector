@@ -19,7 +19,7 @@ import org.angproj.io.sel.driver.task
 /**
  * A fully functional abstract base for selection keys, using [SelectOperation] for operation sets.
  */
-public abstract class AbstractSelectionKey<A, E : SelectOperation<*>>(
+public abstract class AbstractSelectionKey<A: Closeable, E : SelectOperation<*>>(
     protected val selector: AbstractSelector,
     protected val item: SelectableItem,
     protected val handler: suspend AbstractSelectionKey<A, E>.() -> Unit

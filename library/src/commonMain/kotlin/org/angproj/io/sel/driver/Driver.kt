@@ -17,6 +17,7 @@ package org.angproj.io.sel.driver
 import org.angproj.io.sel.AbstractSelectableItem
 import org.angproj.io.sel.AbstractSelectionKey
 import org.angproj.io.sel.AbstractSelector
+import org.angproj.io.sel.Closeable
 import org.angproj.io.sel.SelectOperation
 import org.angproj.io.sel.SelectionKey
 import org.angproj.io.sel.Selector
@@ -143,7 +144,7 @@ public object Driver : SelectorProvider {
             return readyCount
         }
 
-        override suspend fun <I: AbstractSelectableItem, E : SelectOperation<*>, A> register(
+        override suspend fun <I: AbstractSelectableItem, E : SelectOperation<*>, A: Closeable> register(
             item: I,
             vararg ops: E,
             attachment: A,

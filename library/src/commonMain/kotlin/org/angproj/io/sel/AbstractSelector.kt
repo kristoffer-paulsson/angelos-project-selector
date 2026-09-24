@@ -45,7 +45,7 @@ public abstract class AbstractSelector : Selector {
 
     protected abstract suspend fun implCloseSelector()
 
-    public abstract suspend fun <I: AbstractSelectableItem, E : SelectOperation<*>, A> register(
+    public abstract suspend fun <I: AbstractSelectableItem, E : SelectOperation<*>, A: Closeable> register(
         item: I,
         vararg ops: E,
         attachment: A,

@@ -16,8 +16,9 @@ package org.angproj.io.sel.notify
 
 import org.angproj.io.sel.AbstractSelectionKey
 import org.angproj.io.sel.AbstractSelector
+import org.angproj.io.sel.Closeable
 
-public class NotifySelectionKey<A>(
+public class NotifySelectionKey<A: Closeable>(
     selector: AbstractSelector,
     item: SelectableNotify,
     handler: suspend AbstractSelectionKey<A, SelectNotifyOperation>.() -> Unit,

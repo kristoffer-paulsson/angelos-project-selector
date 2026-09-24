@@ -16,8 +16,9 @@ package org.angproj.io.sel.channel
 
 import org.angproj.io.sel.AbstractSelectionKey
 import org.angproj.io.sel.AbstractSelector
+import org.angproj.io.sel.Closeable
 
-public class ChannelSelectionKey<A>(
+public class ChannelSelectionKey<A: Closeable>(
     selector: AbstractSelector,
     item: SelectableChannel,
     handler: suspend AbstractSelectionKey<A, SelectChannelOperation>.() -> Unit,

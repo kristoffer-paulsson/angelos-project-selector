@@ -29,7 +29,7 @@ package org.angproj.io.sel
  *
  * Selection keys are thread-safe and may be used by multiple threads.
  */
-public interface SelectionKey<A, E: SelectOperation<*>> {
+public interface SelectionKey<A: Closeable, E: SelectOperation<*>> {
 
     public fun doHandle()
 

@@ -16,12 +16,13 @@ package org.angproj.io.sel.channel
 
 import kotlinx.coroutines.CoroutineScope
 import org.angproj.io.sel.AbstractSelector
+import org.angproj.io.sel.Closeable
 import org.angproj.io.sel.driver.Driver
 import org.angproj.io.sel.driver.Steward
 
 public class Pipe(selector: AbstractSelector = Driver.openSelector()): SelectableChannel(selector) {
 
-    override suspend fun <A> openImpl(attachment: A): ChannelSelectionKey<A> {
+    override suspend fun <A: Closeable> openImpl(attachment: A): ChannelSelectionKey<A> {
         return selector.register(this, SelectChannelOperation.OP_WRITE, attachment = attachment) {
             ChannelSelectionKey(selector, it) {
                 when{
