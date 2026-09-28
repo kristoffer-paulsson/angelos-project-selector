@@ -15,4 +15,6 @@
 package org.angproj.io.sel
 
 public interface SelectorProvider {
+
+    public fun openSelector(): AbstractSelector
 }

@@ -14,12 +14,7 @@
  */
 package org.angproj.io.sel.driver
 
-import org.angproj.io.sel.AbstractSelectableItem
-import org.angproj.io.sel.AbstractSelectionKey
 import org.angproj.io.sel.AbstractSelector
-import org.angproj.io.sel.Closeable
-import org.angproj.io.sel.SelectOperation
-import org.angproj.io.sel.SelectionKey
 import org.angproj.io.sel.Selector
 import org.angproj.io.sel.SelectorProvider
 import kotlin.time.Duration
@@ -30,30 +25,11 @@ public object Driver : SelectorProvider {
         buildSelector()
     }
 
-    public fun openSelector(): AbstractSelector {
+    override fun openSelector(): AbstractSelector {
         return innerSelector
     }
 
     private fun buildSelector(): AbstractSelector = object : AbstractSelector() {
-
-        private var _closed = false
-
-        private val allKeys: Dispenser<HashSet<SelectionKey<*, *>>> = Dispenser(hashSetOf())
-        private val selected: Dispenser<HashSet<SelectionKey<*, *>>> = Dispenser(hashSetOf())
-        private val cancelled: Dispenser<HashSet<SelectionKey<*, *>>> = Dispenser(hashSetOf())
-
-        override fun close() {
-            if (!_closed) {
-                _closed = true
-                task { implCloseSelector() }
-            }
-        }
-
-        override fun isOpen(): Boolean = !_closed
-
-        override suspend fun keys(block: suspend (HashSet<SelectionKey<*,*>>) -> Unit) {
-            allKeys.dispense(block)
-        }
 
         override fun provider(): SelectorProvider = this@Driver
 
@@ -63,10 +39,6 @@ public object Driver : SelectorProvider {
                 selectCount = doWakeUp()
             }
             return selectCount
-        }
-
-        override suspend fun selectedKeys(block: suspend (HashSet<SelectionKey<*,*>>) -> Unit) {
-            selected.dispense(block)
         }
 
         override fun selectNow(): Int {
@@ -108,27 +80,16 @@ public object Driver : SelectorProvider {
             return this
         }
 
-        override suspend fun cancelledKeys(block: suspend (HashSet<SelectionKey<*,*>>) -> Unit) {
-            cancelled.dispense(block)
-        }
-
-        override suspend fun deregister(key: AbstractSelectionKey<*, *>) {
-            require(!key.isValid()) { "Key must be cancelled before deregistration" }
-            cancelledKeys { keys -> keys.remove(key) }
-            selectedKeys { keys -> keys.remove(key) }
-            keys { keys -> keys.remove(key) }
-        }
-
         override suspend fun implCloseSelector() {
-            keys { keys ->
+            /*keys { keys ->
                 keys.forEach { key ->
                     key.takeIf { it.isValid() }?.cancel()
                     keys.remove(key)
                 }
             }
-            cancelledKeys() { keys ->
+            cancelledKeys { keys ->
                 keys.clear()
-            }
+            }*/
         }
 
         private suspend fun readySelector(): Int {
@@ -142,23 +103,6 @@ public object Driver : SelectorProvider {
                 }
             }
             return readyCount
-        }
-
-        override suspend fun <I: AbstractSelectableItem, E : SelectOperation<*>, A: Closeable> register(
-            item: I,
-            vararg ops: E,
-            attachment: A,
-            build: AbstractSelector.(I) -> AbstractSelectionKey<A, E>
-        ): AbstractSelectionKey<A, *> {
-            check(isOpen()) { "Selector is closed" }
-
-            val selectionKey = build(item)
-            selectionKey.interestOps(*ops)
-            selectionKey.attach(attachment)
-            allKeys.dispense { keys ->
-                keys.add(selectionKey)
-            }
-            return selectionKey
         }
     }
 

@@ -76,6 +76,7 @@ kotlin {
             implementation(libs.kotlin.coroutines.android)
         }
         jvmMain.dependencies {
+            implementation(libs.jnr.enxio)
             implementation(libs.kotlin.mockito)
         }
     }

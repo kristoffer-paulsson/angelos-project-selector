@@ -33,6 +33,13 @@ public interface Selector {
 
     public suspend fun wakeup(): Selector
 
+    public suspend fun <I: AbstractSelectableItem, E : SelectOperation<*>, A: Closeable> register(
+        item: I,
+        vararg ops: E,
+        attachment: A,
+        build: AbstractSelector.(I) -> AbstractSelectionKey<A, E>
+    ): AbstractSelectionKey<A, *>
+
     public companion object {
          //public fun	open(): Selector { return }
     }
