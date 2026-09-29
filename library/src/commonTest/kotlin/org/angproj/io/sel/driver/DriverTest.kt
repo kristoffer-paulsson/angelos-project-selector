@@ -47,8 +47,8 @@ class DriverTest {
                         println("Hello, world! $loop, " + time.elapsedNow())
                         clearOps(SelectNotifyOperation.OP_NOTIFY)
                        when {
-                            loop < 100 -> interestOps(SelectNotifyOperation.OP_NOTIFY)
-                            isValid() -> interestOps(SelectNotifyOperation.OP_CLOSE)
+                            loop < 100 -> reportInterest(interestOps(SelectNotifyOperation.OP_NOTIFY))
+                            isValid() -> reportInterest(interestOps(SelectNotifyOperation.OP_CLOSE))
                             else -> Unit
                         }
                     }

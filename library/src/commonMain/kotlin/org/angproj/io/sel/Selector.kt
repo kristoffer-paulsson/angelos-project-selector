@@ -35,6 +35,8 @@ public interface Selector {
 
     public suspend fun wakeup(): Selector
 
+    public suspend fun <A: Closeable, E : SelectOperation<*>> reportInterest(key: AbstractSelectionKey<A, E>)
+
     public suspend fun <I: AbstractSelectableItem, E : SelectOperation<*>, A: Closeable> register(
         item: I,
         vararg ops: E,

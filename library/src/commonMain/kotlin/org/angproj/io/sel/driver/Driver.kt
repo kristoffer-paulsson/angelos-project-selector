@@ -76,9 +76,12 @@ public object Driver : SelectorProvider {
         override suspend fun implCleanCancelled(
             key: AbstractSelectionKey<*, *>,
             altCnt: Int
-        ): Int { return altCnt}
+        ): Int { return altCnt }
 
         override suspend fun implCloseSelector() {}
+        override suspend fun <A : Closeable, E : SelectOperation<*>> reportInterestImpl(
+            key: AbstractSelectionKey<A, E>
+        ) { }
 
         override suspend fun <A : Closeable, E : SelectOperation<*>> deregisterImpl(
             key: AbstractSelectionKey<A, E>

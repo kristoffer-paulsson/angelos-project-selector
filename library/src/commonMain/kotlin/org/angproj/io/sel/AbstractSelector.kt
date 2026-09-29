@@ -113,6 +113,12 @@ public abstract class AbstractSelector : Selector {
 
     protected abstract suspend fun implCloseSelector()
 
+    override suspend fun <A: Closeable, E : SelectOperation<*>> reportInterest(
+        key: AbstractSelectionKey<A, E>
+    ): Unit = reportInterestImpl(key)
+
+    protected abstract suspend fun <A: Closeable, E : SelectOperation<*>> reportInterestImpl(key: AbstractSelectionKey<A, E>)
+
     internal suspend fun<A: Closeable, E : SelectOperation<*>> deregister(key: AbstractSelectionKey<A, E>) {
         require(!key.isValid()) { "Key must be cancelled before deregistration" }
         key.attachment().close()
