@@ -21,19 +21,23 @@ import kotlin.time.Duration
 
 public abstract class AbstractSelector : Selector {
 
-    private val allKeys: Dispenser<HashSet<SelectionKey<*, *>>> = Dispenser(hashSetOf())
-    private val selected: Dispenser<HashSet<SelectionKey<*, *>>> = Dispenser(hashSetOf())
-    private val cancelled: Dispenser<HashSet<SelectionKey<*, *>>> = Dispenser(hashSetOf())
+    protected abstract suspend fun poll(): Int
 
-    override suspend fun keys(block: suspend (HashSet<SelectionKey<*,*>>) -> Unit) {
+    protected abstract fun pollReadyCountImpl(cancelledCount: Int, timeout: Long): Int
+
+    private val allKeys: Dispenser<HashSet<AbstractSelectionKey<*, *>>> = Dispenser(hashSetOf())
+    private val selected: Dispenser<HashSet<AbstractSelectionKey<*, *>>> = Dispenser(hashSetOf())
+    private val cancelled: Dispenser<HashSet<AbstractSelectionKey<*, *>>> = Dispenser(hashSetOf())
+
+    override suspend fun keys(block: suspend (HashSet<AbstractSelectionKey<*,*>>) -> Unit) {
         allKeys.dispense(block)
     }
 
-    override suspend fun selectedKeys(block: suspend (HashSet<SelectionKey<*,*>>) -> Unit) {
+    override suspend fun selectedKeys(block: suspend (HashSet<AbstractSelectionKey<*,*>>) -> Unit) {
         selected.dispense(block)
     }
 
-    protected suspend fun cancelledKeys(block: suspend (HashSet<SelectionKey<*,*>>) -> Unit) {
+    override suspend fun cancelledKeys(block: suspend (HashSet<AbstractSelectionKey<*,*>>) -> Unit) {
         cancelled.dispense(block)
     }
 
@@ -44,14 +48,12 @@ public abstract class AbstractSelector : Selector {
             _closed = true
             task {
                 implCloseSelector()
-                keys { keys ->
-                    keys.forEach { key ->
-                        key.takeIf { it.isValid() }?.cancel()
-                        keys.remove(key)
-                    }
-                }
+                cleanCancelled()
                 selectedKeys { keys -> keys.clear() }
-                cancelledKeys { keys -> keys.clear() }
+                keys { keys ->
+                    keys.forEach { if(it.isValid()) it.cancel() }
+                    keys.clear()
+                }
             }
         }
     }
@@ -66,24 +68,67 @@ public abstract class AbstractSelector : Selector {
 
     abstract override suspend fun wakeup(): Selector
 
+    protected abstract suspend fun wakeupReceived()
+
     //protected void	begin()
 
-    internal suspend fun deregister(key: AbstractSelectionKey<*, *>) {
+    protected suspend fun selectChanged(): Int {
+        var changeCount = 0
+        selectedKeys { sKeys ->
+            keys { keys ->
+                keys.forEach { key ->
+                    if(key.readyOps() != 0 && key.isIdle()) {
+                        sKeys.add(key)
+                        changeCount++
+                    }
+                }
+            }
+        }
+        return changeCount
+    }
+
+    protected suspend fun invokeSelected(): Int {
+        var selectedCount = 0
+        selectedKeys { sKeys ->
+            sKeys.forEach { sKey -> if(sKey.isValid()) sKey.doHandle() }
+            selectedCount = sKeys.count()
+            sKeys.clear()
+        }
+        return selectedCount
+    }
+
+    protected suspend fun cleanCancelled(): Int {
+        var cancelledCount = 0
+        var internalCount = 0
+        cancelledKeys { cKeys ->
+            keys { keys -> keys.removeAll(cKeys) }
+            cancelledCount -= cKeys.size
+            if(isOpen()) cKeys.forEach { cKey -> internalCount = implCleanCancelled(cKey, internalCount) }
+            cKeys.clear()
+        }
+        return cancelledCount
+    }
+
+    protected abstract suspend fun implCleanCancelled(key: AbstractSelectionKey<*, *>, altCnt: Int): Int
+
+    protected abstract suspend fun implCloseSelector()
+
+    internal suspend fun<A: Closeable, E : SelectOperation<*>> deregister(key: AbstractSelectionKey<A, E>) {
         require(!key.isValid()) { "Key must be cancelled before deregistration" }
-        cancelledKeys { keys -> keys.remove(key) }
-        selectedKeys { keys -> keys.remove(key) }
-        keys { keys -> keys.remove(key) }
+        key.attachment().close()
+        deregisterImpl(key)
+        if(isOpen()) cancelledKeys { keys -> keys.add(key) }
     }
     //protected void	end()
 
-    protected abstract suspend fun implCloseSelector()
+    protected abstract suspend fun<A: Closeable, E : SelectOperation<*>> deregisterImpl(key: AbstractSelectionKey<A, E>)
 
     override suspend fun <I: AbstractSelectableItem, E : SelectOperation<*>, A: Closeable> register(
         item: I,
         vararg ops: E,
         attachment: A,
         build: AbstractSelector.(I) -> AbstractSelectionKey<A, E>
-    ): AbstractSelectionKey<A, *> {
+    ): AbstractSelectionKey<A, E> {
         check(isOpen()) { "Selector is closed" }
 
         val selectionKey = build(item)
@@ -92,6 +137,9 @@ public abstract class AbstractSelector : Selector {
         keys { keys ->
             keys.add(selectionKey)
         }
+        registerImpl(selectionKey)
         return selectionKey
     }
+
+    protected abstract suspend fun<A: Closeable, E : SelectOperation<*>> registerImpl(key: AbstractSelectionKey<A, E>)
 }

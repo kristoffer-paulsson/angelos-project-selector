@@ -21,13 +21,15 @@ public interface Selector {
 
     public fun isOpen(): Boolean
 
-    public suspend fun keys(block: suspend (HashSet<SelectionKey<*,*>>) -> Unit)
+    public suspend fun keys(block: suspend (HashSet<AbstractSelectionKey<*,*>>) -> Unit)
 
     public fun provider(): SelectorProvider
 
     public fun select(timeout: Duration): Int
 
-    public suspend fun selectedKeys(block: suspend (HashSet<SelectionKey<*,*>>) -> Unit)
+    public suspend fun selectedKeys(block: suspend (HashSet<AbstractSelectionKey<*,*>>) -> Unit)
+
+    public suspend fun cancelledKeys(block: suspend (HashSet<AbstractSelectionKey<*,*>>) -> Unit)
 
     public fun selectNow(): Int
 

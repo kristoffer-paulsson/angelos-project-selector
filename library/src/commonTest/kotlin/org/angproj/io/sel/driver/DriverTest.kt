@@ -28,7 +28,7 @@ class DriverTest {
 
     class Attachment: Closeable {
         override fun close() {
-            TODO("Not yet implemented")
+            println("Attachment closed")
         }
     }
 

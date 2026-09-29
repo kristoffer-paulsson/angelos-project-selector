@@ -98,7 +98,9 @@ public abstract class AbstractSelectionKey<A: Closeable, E : SelectOperation<*>>
     override fun cancel() {
         if (isValid()) {
             _state = State.ABORTING
-            task { selector.deregister(this@AbstractSelectionKey) }
+            task {
+                selector.deregister(this@AbstractSelectionKey)
+            }
         }
     }
 }
