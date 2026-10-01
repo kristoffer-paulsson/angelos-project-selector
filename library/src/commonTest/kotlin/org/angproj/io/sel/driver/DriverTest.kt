@@ -26,7 +26,7 @@ import kotlin.time.TimeSource
 
 class DriverTest {
 
-    class Attachment: Closeable {
+    class Attachment : Closeable {
         override fun close() {
             println("Attachment closed")
         }
@@ -41,22 +41,25 @@ class DriverTest {
 
         val key = selector.register(selectable, SelectNotifyOperation.OP_NOTIFY, attachment = Attachment()) {
             NotifySelectionKey(this, it) {
-                when{
+                when {
                     isHandleable(SelectNotifyOperation.OP_NOTIFY) -> {
                         loop++
                         println("Hello, world! $loop, " + time.elapsedNow())
                         clearOps(SelectNotifyOperation.OP_NOTIFY)
-                       when {
-                            loop < 100 -> reportInterest(interestOps(SelectNotifyOperation.OP_NOTIFY))
-                            isValid() -> reportInterest(interestOps(SelectNotifyOperation.OP_CLOSE))
+                        when {
+                            loop < 100 -> interestOps(SelectNotifyOperation.OP_NOTIFY)
+                            isValid() -> interestOps(SelectNotifyOperation.OP_CLOSE)
                             else -> Unit
                         }
+                        reportInterest(this)
                     }
+
                     isHandleable(SelectNotifyOperation.OP_CLOSE) -> {
                         clearOps(SelectNotifyOperation.OP_CLOSE)
                         cancel()
                         selector.close()
                     }
+
                     else -> error("Unhandled $loop " + readyOps())
                 }
             }

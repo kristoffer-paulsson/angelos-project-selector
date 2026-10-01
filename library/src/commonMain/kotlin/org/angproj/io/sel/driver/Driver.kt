@@ -37,7 +37,7 @@ public object Driver : SelectorProvider {
 
         private val mutex: Mutex = Mutex()
 
-        override suspend fun poll(): Int {
+        override suspend fun poll(timeout: Long): Int {
             val numCancelled = cleanCancelled()
             val numChanged = selectChanged()
             val numInvoked = if(numChanged > 0) invokeSelected() else 0
@@ -49,17 +49,17 @@ public object Driver : SelectorProvider {
 
         override fun provider(): SelectorProvider = this@Driver
 
-        override fun select(timeout: Duration): Int {
+        override suspend fun select(timeout: Duration): Int {
             var selectCount = 0
             schedule(timeout) {
-                selectCount = poll()
+                selectCount = poll(timeout.inWholeMilliseconds)
             }
             return selectCount
         }
 
         override fun selectNow(): Int {
             var selectCount = 0
-            task { selectCount = poll() }
+            task { selectCount = poll(0) }
             return selectCount
         }
 

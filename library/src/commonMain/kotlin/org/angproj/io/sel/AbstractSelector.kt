@@ -21,7 +21,7 @@ import kotlin.time.Duration
 
 public abstract class AbstractSelector : Selector {
 
-    protected abstract suspend fun poll(): Int
+    protected abstract suspend fun poll(timeout: Long): Int
 
     protected abstract fun pollReadyCountImpl(cancelledCount: Int, timeout: Long): Int
 
@@ -62,7 +62,7 @@ public abstract class AbstractSelector : Selector {
 
     abstract override fun provider(): SelectorProvider
 
-    abstract override fun select(timeout: Duration): Int
+    abstract override suspend fun select(timeout: Duration): Int
 
     abstract override fun selectNow(): Int
 
@@ -144,6 +144,7 @@ public abstract class AbstractSelector : Selector {
             keys.add(selectionKey)
         }
         registerImpl(selectionKey)
+        reportInterestImpl(selectionKey)
         return selectionKey
     }
 
