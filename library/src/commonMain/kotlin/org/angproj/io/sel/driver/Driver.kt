@@ -22,6 +22,7 @@ import org.angproj.io.sel.SelectOperation
 import org.angproj.io.sel.Selector
 import org.angproj.io.sel.SelectorProvider
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
 
 public object Driver : SelectorProvider {
 
@@ -36,30 +37,25 @@ public object Driver : SelectorProvider {
     private fun buildSelector(): AbstractSelector = object : AbstractSelector() {
 
         private val mutex: Mutex = Mutex()
-
-        override suspend fun poll(timeout: Long): Int {
-            val numCancelled = cleanCancelled()
-            val numChanged = selectChanged()
-            val numInvoked = if(numChanged > 0) invokeSelected() else 0
+        override suspend fun pollReady(cancelledCount: Int, timeout: Long): Int {
             wakeupReceived()
-            return numInvoked
+            return 0
         }
-
-        override fun pollReadyCountImpl(cancelledCount: Int, timeout: Long): Int = 0
 
         override fun provider(): SelectorProvider = this@Driver
 
         override suspend fun select(timeout: Duration): Int {
-            var selectCount = 0
-            schedule(timeout) {
-                selectCount = poll(timeout.inWholeMilliseconds)
-            }
-            return selectCount
+            val numCancelled = cleanCancelled()
+            val numReady = pollReady(numCancelled, timeout.inWholeMilliseconds)
+
+            val numChanged = selectChanged()
+            val numInvoked = if(numChanged > 0) invokeSelected() else 0
+            return numInvoked
         }
 
         override fun selectNow(): Int {
             var selectCount = 0
-            task { selectCount = poll(0) }
+            task { selectCount = select(0.milliseconds) }
             return selectCount
         }
 
@@ -73,8 +69,8 @@ public object Driver : SelectorProvider {
             mutex.lock()
         }
 
-        override suspend fun implCleanCancelled(
-            key: AbstractSelectionKey<*, *>,
+        override suspend fun<A: Closeable, E : SelectOperation<*>> implCleanCancelled(
+            key: AbstractSelectionKey<A, E>,
             altCnt: Int
         ): Int { return altCnt }
 

@@ -84,32 +84,15 @@ public class PollSelector: AbstractSelector() {
         pollData.putShort((idx * POLLFD_SIZE) + REVENTS_OFFSET, events.toShort())
     }
 
-    override suspend fun poll(timeout: Long): Int {
-        TODO("Not yet implemented")
-    }
-
-    override fun pollReadyCountImpl(cancelledCount: Int, timeout: Long): Int {
+    override suspend fun pollReady(cancelledCount: Int, timeout: Long): Int {
         var readyCount = 0
 
         do {
             readyCount = Native.libc().poll(pollData, nfds, timeout.toInt())
         } while (readyCount < 0 && Errno.EINTR.equals(Errno.valueOf(Native.getRuntime().lastError.toLong())))
 
-        return readyCount
-    }
-
-    override fun provider(): SelectorProvider = object: SelectorProvider {
-        override fun openSelector(): AbstractSelector {
-            TODO("Not yet implemented")
-        }
-    }
-
-    override suspend fun select(timeout: Duration): Int {
-        val numCancelled = cleanCancelled()
-        val pollReady = pollReadyCountImpl(numCancelled, timeout.inWholeMilliseconds)
-
-        if (pollReady < 1) {
-            return pollReady
+        if (readyCount < 1) {
+            return readyCount
         }
 
         if ((getPollRevents(0).toInt() and OpP.POLLIN.value) != 0) {
@@ -120,7 +103,6 @@ public class PollSelector: AbstractSelector() {
         keys { k ->
             idx.dispense { i ->
                 k.forEach { key ->
-                    key as ChannelSelectionKey
                     val index = i.keyIndex.indexOf(key)
                     val revents = getPollRevents(index).toInt()
                     if (revents != 0) {
@@ -141,6 +123,18 @@ public class PollSelector: AbstractSelector() {
                 }
             }
         }
+        return updatedKeyCount
+    }
+
+    override fun provider(): SelectorProvider = object: SelectorProvider {
+        override fun openSelector(): AbstractSelector {
+            TODO("Not yet implemented")
+        }
+    }
+
+    override suspend fun select(timeout: Duration): Int {
+        val numCancelled = cleanCancelled()
+        val numReady = pollReady(numCancelled, timeout.inWholeMilliseconds)
 
         val numChanged = selectChanged()
         val numInvoked = if(numChanged > 0) invokeSelected() else 0
@@ -153,8 +147,8 @@ public class PollSelector: AbstractSelector() {
         return selectCount
     }
 
-    override suspend fun implCleanCancelled(
-        key: AbstractSelectionKey<*, *>,
+    override suspend fun<A: Closeable, E : SelectOperation<*>> implCleanCancelled(
+        key: AbstractSelectionKey<A, E>,
         altCnt: Int
     ): Int { return altCnt }
 
@@ -174,15 +168,15 @@ public class PollSelector: AbstractSelector() {
     ) {
         idx.dispense { i ->
             var events = 0
-            if(key.isInterested(SelectChannelOperation.OP_ACCEPT as E) || key.isInterested(SelectChannelOperation.OP_READ as E)) {
+            if(key.isInterested(SelectChannelOperation.OP_ACCEPT) || key.isInterested(SelectChannelOperation.OP_READ)) {
                 events = events or OpP.POLLIN.value
             }
 
-            if(key.isInterested(SelectChannelOperation.OP_WRITE as E) || key.isInterested(SelectChannelOperation.OP_CONNECT as E)) {
+            if(key.isInterested(SelectChannelOperation.OP_WRITE) || key.isInterested(SelectChannelOperation.OP_CONNECT)) {
                 events = events or OpP.POLLOUT.value
             }
 
-            putPollEvents(i.keyIndex.indexOf(key as ChannelSelectionKey<A>), events)
+            putPollEvents(i.keyIndex.indexOf(key as ChannelSelectionKey), events)
         }
 
     }

@@ -76,6 +76,7 @@ class DriverTest {
 
             selector.selectNow()
             ticks++
+            selector.wakeup()
             takeUnless { selector.isOpen() }?.let {
                 cancel()
             }

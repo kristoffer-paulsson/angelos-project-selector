@@ -21,9 +21,7 @@ import kotlin.time.Duration
 
 public abstract class AbstractSelector : Selector {
 
-    protected abstract suspend fun poll(timeout: Long): Int
-
-    protected abstract fun pollReadyCountImpl(cancelledCount: Int, timeout: Long): Int
+    protected abstract suspend fun pollReady(cancelledCount: Int, timeout: Long): Int
 
     private val allKeys: Dispenser<HashSet<AbstractSelectionKey<*, *>>> = Dispenser(hashSetOf())
     private val selected: Dispenser<HashSet<AbstractSelectionKey<*, *>>> = Dispenser(hashSetOf())
@@ -109,7 +107,7 @@ public abstract class AbstractSelector : Selector {
         return cancelledCount
     }
 
-    protected abstract suspend fun implCleanCancelled(key: AbstractSelectionKey<*, *>, altCnt: Int): Int
+    protected abstract suspend fun<A: Closeable, E : SelectOperation<*>> implCleanCancelled(key: AbstractSelectionKey<A, E>, altCnt: Int): Int
 
     protected abstract suspend fun implCloseSelector()
 

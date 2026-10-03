@@ -64,19 +64,26 @@ public class KQSelector: AbstractSelector() {
         }
     }
 
-    override fun selectNow(): Int {
-        var selectCount = 0
-        task { selectCount = select(0.milliseconds) }
-        return selectCount
-    }
+    override suspend fun pollReady(cancelledCount: Int, timeout: Long): Int {
+        var ts: Native.Timespec? = null
+        if (timeout >= 0) {
+            val sec = TimeUnit.MILLISECONDS.toSeconds(timeout)
+            val nsec = TimeUnit.MILLISECONDS.toNanos(timeout % 1000)
+            ts = Native.Timespec(sec, nsec)
+        }
 
-    override suspend fun select(timeout: Duration): Int {
-        val numCancelled = cleanCancelled()
-        val pollReady = pollReadyCountImpl(numCancelled, timeout.inWholeMilliseconds)
+        if (EventIO.DEBUG) System.err.printf("nchanged=%d\n", cancelledCount)
+        var readyCount = 0
+        do {
+            readyCount = Native.libc().kevent(kqfd, changeBuf, cancelledCount, eventBuf, EventIO.MAX_EVENTS, ts)
+        } while (readyCount < 0 && Errno.EINTR == Errno.valueOf(Native.getRuntime().lastError.toLong()))
+
+        if (EventIO.DEBUG) System.err.println("kevent returned $readyCount events ready")
+
 
         var updatedKeyCount = 0
         fds.dispense {
-            ( 0..< pollReady).forEach { idx ->
+            ( 0..< readyCount).forEach { idx ->
                 val fd = io.getFD(eventBuf, idx)
 
                 when(fd) {
@@ -97,6 +104,19 @@ public class KQSelector: AbstractSelector() {
                 }
             }
         }
+        return updatedKeyCount
+    }
+
+    override fun selectNow(): Int {
+        var selectCount = 0
+        task { selectCount = select(0.milliseconds) }
+        return selectCount
+    }
+
+    override suspend fun select(timeout: Duration): Int {
+        val numCancelled = cleanCancelled()
+
+        val numReady = pollReady(numCancelled, timeout.inWholeMilliseconds)
 
         val numChanged = selectChanged()
         val numInvoked = if(numChanged > 0) invokeSelected() else 0
@@ -135,8 +155,8 @@ public class KQSelector: AbstractSelector() {
         fds.dispense {
             val fd = it.keyFD[key as ChannelSelectionKey] ?: error("$key not found")
 
-            val writing = key.isInterested(SelectChannelOperation.OP_ACCEPT as E) || key.isInterested(SelectChannelOperation.OP_READ as E)
-            val reading = key.isInterested(SelectChannelOperation.OP_CONNECT as E) || key.isInterested(SelectChannelOperation.OP_WRITE as E)
+            val writing = key.isInterested(SelectChannelOperation.OP_ACCEPT) || key.isInterested(SelectChannelOperation.OP_READ)
+            val reading = key.isInterested(SelectChannelOperation.OP_CONNECT) || key.isInterested(SelectChannelOperation.OP_WRITE)
 
             var flags = 0
             // EvFilt.EVFILT_READ
@@ -160,8 +180,8 @@ public class KQSelector: AbstractSelector() {
         Native.libc().kevent(kqfd, changeBuf, count, null, 0, ZERO_TIMESPEC)
     }
 
-    override suspend fun implCleanCancelled(
-        key: AbstractSelectionKey<*, *>,
+    override suspend fun<A: Closeable, E : SelectOperation<*>> implCleanCancelled(
+        key: AbstractSelectionKey<A, E>,
         altCnt: Int
     ): Int {
         var cnt = altCnt
@@ -203,29 +223,6 @@ public class KQSelector: AbstractSelector() {
     override suspend fun wakeup(): Selector {
         Native.libc().write(pipefd[1], ByteArray(1), 1)
         return this
-    }
-
-    override suspend fun poll(timeout: Long): Int {
-        TODO("Not yet implemented")
-    }
-
-    override fun pollReadyCountImpl(cancelledCount: Int, timeout: Long): Int {
-        var ts: Native.Timespec? = null
-        if (timeout >= 0) {
-            val sec = TimeUnit.MILLISECONDS.toSeconds(timeout)
-            val nsec = TimeUnit.MILLISECONDS.toNanos(timeout % 1000)
-            ts = Native.Timespec(sec, nsec)
-        }
-
-        if (EventIO.DEBUG) System.err.printf("nchanged=%d\n", cancelledCount)
-        var readyCount = 0
-        do {
-            readyCount = Native.libc().kevent(kqfd, changeBuf, cancelledCount, eventBuf, EventIO.MAX_EVENTS, ts)
-        } while (readyCount < 0 && Errno.EINTR == Errno.valueOf(Native.getRuntime().lastError.toLong()))
-
-        if (EventIO.DEBUG) System.err.println("kevent returned $readyCount events ready")
-
-        return readyCount
     }
 
     public enum class EvFilt(public val value: Int) {
